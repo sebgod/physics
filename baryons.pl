@@ -41,7 +41,7 @@ quark_number(QuantumNumber, QuarkFlavour, ValueN) :-
     ),
     !.
 
-particles:quantum_number(QuantumNumber, Baryon, Value) :-
+particles:quantum_number_mf(QuantumNumber, Baryon, Value) :-
     classical_baryon(Baryon),
     particles:quantum_number(QuantumNumber),
     quark_content_flavour(Baryon, QF1, QF2, QF3),

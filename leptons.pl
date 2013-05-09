@@ -12,12 +12,12 @@ flavour(neutrino(tau)).
 lepton(L) :- flavour(L).
 lepton(anti(L)) :- flavour(L).
 
-particles:quantum_number(lepton, L, 1) :- flavour(L).
+particles:quantum_number_mf(lepton, L, 1) :- flavour(L).
 
-particles:quantum_number(electric_charge, electron, -1).
-particles:quantum_number(electric_charge, muon, -1).
-particles:quantum_number(electric_charge, tau, -1).
+particles:quantum_number_mf(electric_charge, electron, -1).
+particles:quantum_number_mf(electric_charge, muon, -1).
+particles:quantum_number_mf(electric_charge, tau, -1).
 
-particles:quantum_number(electric_charge, neutrino(L), 0) :-
+particles:quantum_number_mf(electric_charge, neutrino(L), 0) :-
     flavour(L),
     L \= neutrino(_).

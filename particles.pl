@@ -9,6 +9,7 @@
                       symbol/2,
                       quantum_number/1,
                       quantum_number/3,
+					  quantum_number_mf/3,
                       conserved_quantum_number/1,
                       flavour_quantum_number/1
                      ]).
@@ -18,7 +19,8 @@
 :- multifile symbol/2.
 :- multifile spin/2.
 :- multifile color_charge/2.
-:- multifile quantum_number/3.
+:- multifile quantum_number_mf/3.
+
 %%	quantum_number(+NumberType, +AntiParticle, ?AntiNumber) is semidet.
 particles:quantum_number(NumberType, AntiParticle, AntiNumber) :-
     (   ground(AntiParticle)
@@ -26,8 +28,12 @@ particles:quantum_number(NumberType, AntiParticle, AntiNumber) :-
         !
     ;   proper_anti_particle(Particle, AntiParticle)
     ),
-    particles:quantum_number(NumberType, Particle, Number),
+    particles:quantum_number_mf(NumberType, Particle, Number),
     AntiNumber is -Number.
+
+particles:quantum_number(NumberType, Particle, Number) :-
+    (   compound(Particle) -> Particle \= anti(_) ; true ),
+    particles:quantum_number_mf(NumberType, Particle, Number).
 
 :- use_module(utils).
 :- use_module(quarks, []).

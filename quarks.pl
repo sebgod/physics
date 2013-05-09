@@ -40,36 +40,36 @@ quark_type(Q, Type) :-
     ;   Type = down_type
     ).
 
-particles:quantum_number(FlavourNumber, Quark, 0) :-
+particles:quantum_number_mf(FlavourNumber, Quark, 0) :-
     flavour(FlavourNumber),
     flavour(QuarkFlavour),
     QuarkFlavour \= FlavourNumber,
     color(Quark, QuarkFlavour, _Color).
 
-particles:quantum_number(charm, charm(C), 1) :-      quark_color(C).
-particles:quantum_number(strange, strange(C), -1) :- quark_color(C).
-particles:quantum_number(top, top(C), 1) :-          quark_color(C).
-particles:quantum_number(bottom, bottom(C), -1) :-   quark_color(C).
+particles:quantum_number_mf(charm, charm(C), 1) :-      quark_color(C).
+particles:quantum_number_mf(strange, strange(C), -1) :- quark_color(C).
+particles:quantum_number_mf(top, top(C), 1) :-          quark_color(C).
+particles:quantum_number_mf(bottom, bottom(C), -1) :-   quark_color(C).
 
-particles:quantum_number(electric_charge, up(C), +2 rdiv 3) :-
+particles:quantum_number_mf(electric_charge, up(C), +2 rdiv 3) :-
     quark_color(C).
-particles:quantum_number(electric_charge, down(C), -1 rdiv 3) :-
+particles:quantum_number_mf(electric_charge, down(C), -1 rdiv 3) :-
     quark_color(C).
-particles:quantum_number(electric_charge, charm(C), +2 rdiv 3) :-
+particles:quantum_number_mf(electric_charge, charm(C), +2 rdiv 3) :-
     quark_color(C).
-particles:quantum_number(electric_charge, strange(C), -1 rdiv 3) :-
+particles:quantum_number_mf(electric_charge, strange(C), -1 rdiv 3) :-
     quark_color(C).
-particles:quantum_number(electric_charge, top(C), +2 rdiv 3) :-
+particles:quantum_number_mf(electric_charge, top(C), +2 rdiv 3) :-
     quark_color(C).
-particles:quantum_number(electric_charge, bottom(C), -1 rdiv 3) :-
-    quark_color(C).
-
-particles:quantum_number(isospin, top(C), +1 rdiv 2) :-
-    quark_color(C).
-particles:quantum_number(isospin, down(C), -1 rdiv 2) :-
+particles:quantum_number_mf(electric_charge, bottom(C), -1 rdiv 3) :-
     quark_color(C).
 
-particles:quantum_number(baryon, Quark, +1 rdiv 3) :-
+particles:quantum_number_mf(isospin, top(C), +1 rdiv 2) :-
+    quark_color(C).
+particles:quantum_number_mf(isospin, down(C), -1 rdiv 2) :-
+    quark_color(C).
+
+particles:quantum_number_mf(baryon, Quark, +1 rdiv 3) :-
     (   ground(Quark) -> ! ; true ),
     flavour(QuarkFlavour),
     primary_color(Quark, QuarkFlavour, _Color).

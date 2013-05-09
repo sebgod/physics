@@ -40,7 +40,7 @@ particles:anti_particle_self(gluon(C)) :- gluon_color(C).
 particles:anti_particle_self(higgs).
 particles:anti_particle_self(graviton).
 
-particles:quantum_number(electric_charge, w_boson, -1).
+particles:quantum_number_mf(electric_charge, w_boson, -1).
 
 particles:color_charge(gluon(GluonColor), GluonColor) :-
     gluon_color(GluonColor).
