@@ -1,6 +1,7 @@
 :- module(particles, [
                       particle/1,
                       anti_particle_self/1,
+                      not_anti_particle/1,
                       proper_anti_particle/2,
                       elementary/1,
                       combined/1,
@@ -22,24 +23,24 @@
 :- multifile quantum_number_mf/3.
 
 %%	quantum_number(+NumberType, +AntiParticle, ?AntiNumber) is semidet.
-particles:quantum_number(NumberType, AntiParticle, AntiNumber) :-
-    (   ground(AntiParticle)
-    ->  proper_anti_particle(Particle, AntiParticle),
-        !
-    ;   proper_anti_particle(Particle, AntiParticle)
-    ),
-    particles:quantum_number_mf(NumberType, Particle, Number),
-    AntiNumber is -Number.
+
+not_anti_particle(Particle) :- Particle \= anti(_).
 
 particles:quantum_number(NumberType, Particle, Number) :-
-    (   compound(Particle) -> Particle \= anti(_) ; true ),
+    ground_semidet(Particle, not_anti_particle),
     particles:quantum_number_mf(NumberType, Particle, Number).
+
+particles:quantum_number(NumberType, anti(AntiParticle), AntiNumber) :-
+    proper_anti_particle(Particle, anti(AntiParticle)),
+    particles:quantum_number_mf(NumberType, Particle, Number),
+    AntiNumber is -Number.
 
 :- use_module(utils).
 :- use_module(quarks, []).
 :- use_module(fermions, [fermion/1]).
 :- use_module(bosons, [elementary_boson/1]).
 :- use_module(hadrons, [classical_hadron/1]).
+:- use_module(baryons, []).
 :- use_module(color_charge, [color/3, anti_color/3]).
 
 quantum_number(Q) :- ground_semidet(Q, quantum_number_nd).
@@ -73,6 +74,13 @@ combined(P) :- classical_hadron(P).
 %%	proper_anti_particle(+Particle, ?AntiParticle) is semidet.
 %%  proper_anti_particle(?Particle, +AntiParticle) is semidet.
 %%	proper_anti_particle(?Particle, ?AntiParticle) is nondet.
+proper_anti_particle(Particle, anti(Particle)) :-
+    ground(Particle),
+    atom(Particle),
+    !,
+    \+ particles:anti_particle_self(Particle),
+    particles:particle(Particle).
+
 proper_anti_particle(Particle0, anti(ParticleN)) :-
     particles:particle(Particle0),
     \+ particles:anti_particle_self(Particle0),

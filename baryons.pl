@@ -5,7 +5,7 @@
                    ]).
 :- use_module(utils).
 :- use_module(particles, [proper_anti_particle/2]).
-:- use_module(color_charge, [white/3, primary_color/3, anti_color/3]).
+:- use_module(color_charge, [white/3, color/3, primary_color/3, anti_color/3]).
 :- use_module(quarks, []).
 
 %%	baryon(+Particle) is semidet.
@@ -34,7 +34,7 @@ quark_content_flavour(lambda(Quark), up, down, Quark) :-
     lambda_third_quark(Quark).
 
 quark_number(QuantumNumber, QuarkFlavour, ValueN) :-
-    primary_color(Quark, QuarkFlavour, _),
+    color(Quark, QuarkFlavour, _),
     (   particles:quantum_number(QuantumNumber, Quark, Value0)
     ->  ValueN = Value0
     ;   ValueN = 0

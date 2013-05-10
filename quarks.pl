@@ -6,6 +6,7 @@
 
 :- use_module(particles).
 :- use_module(color_charge).
+:- use_module(utils).
 
 flavour(up).
 flavour(down).
@@ -16,14 +17,20 @@ flavour(bottom).
 
 quark_color(Color) :- primary_color(Color).
 
-quark(Q) :-
-    (   compound(Q) ->  Q \= anti(_) ; flavour(F) ),
-    color(Q, F, C),
-    quark_color(C).
-
 quark(anti(Q)) :-
     (   compound(Q) ->  true ; flavour(F) ),
     anti_color(anti(Q), F, _).
+quark(Q) :-
+    compound(Q),
+    ground(Q),
+    !,
+    color(Q, F, C),
+    flavour(F),
+    quark_color(C).
+quark(Q) :-
+    flavour(F),
+    primary_color(Q, F, C),
+    quark_color(C).
 
 particles:color_charge(Q, Color) :-
     functor(Q, F, Args),
@@ -70,9 +77,7 @@ particles:quantum_number_mf(isospin, down(C), -1 rdiv 2) :-
     quark_color(C).
 
 particles:quantum_number_mf(baryon, Quark, +1 rdiv 3) :-
-    (   ground(Quark) -> ! ; true ),
-    flavour(QuarkFlavour),
-    primary_color(Quark, QuarkFlavour, _Color).
+    ground_semidet(Quark, quark).
 
 particles:symbol(AntiQuark, AntiSymbol) :-
     proper_anti_particle(Quark, AntiQuark),
