@@ -22,16 +22,16 @@ safe_is(A, B) :-
     ).
 
 numeric_inverse(-A, B) :-
-    numeric_inverse_(B, -A).
-    %var(A),
-    %number(B),
-    %A is -B.
+    numeric_inverse_(B, -A),
+    !. % green cut
+
+numeric_inverse(A, -B) :-
+    numeric_inverse_(A, -B).
 
 numeric_inverse_(A, -B) :-
     number(A),
     var(B),
     B is -A.
-
 
 :- begin_tests(utils).
 
