@@ -4,10 +4,9 @@
                    quark_type/2
                  ]).
 
+:- use_module(utils, [ground_semidet/2]).
 :- use_module(particles).
 :- use_module(color_charge).
-:- use_module(utils).
-
 flavour(up).
 flavour(down).
 flavour(charm).

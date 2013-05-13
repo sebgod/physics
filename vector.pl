@@ -14,7 +14,7 @@
 %%	dimension(+CartVector, +Dim) is semidet.
 dimension(CV, Dim) :-
     functor(CV, cv, Dim),
-    Dim >= 2.
+    Dim >= 1.
 
 %%	standard_base(?Dim:integer, ?Symbol, ?CartVector) is nondet.
 
@@ -31,6 +31,8 @@ standard_base(Dim, E, CV) :-
     ->  standard_base_spatial(Dim, E, CV), !
     ;   standard_base_spatial(Dim, E, CV)
     ).
+
+standard_base_spatial(1, e(1), cv(1)).
 
 standard_base_spatial(2, e(1), cv(1, 0)).
 standard_base_spatial(2, e(2), cv(0, 1)).

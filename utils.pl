@@ -21,22 +21,18 @@ safe_is(A, B) :-
     ;   numeric_inverse(A, B)
     ).
 
-numeric_inverse(-A, B) :-
-    numeric_inverse_(B, -A),
-    !. % green cut
-
-numeric_inverse(A, -B) :-
-    numeric_inverse_(A, -B).
+numeric_inverse(-A, B) :- numeric_inverse_(B, -A), !. % green cut
+numeric_inverse(A, -B) :- numeric_inverse_(A, -B).
 
 numeric_inverse_(A, -B) :-
-    number(A),
+    _ is A,
     var(B),
     B is -A.
 
 :- begin_tests(utils).
 
 test('safe_is(0,1)', [fail]) :- safe_is(0, 1).
-test('safe_is(A, 1)') :- safe_is(A, 1), A == 1.
+test('safe_is(A, 1)', [A =:= 1]) :- safe_is(A, 1).
 test('safe_is(pi, pi)') :- safe_is(pi, pi).
 test('safe_is(A, pi)', [setup(Pi is pi)]) :- safe_is(Pi, pi).
 test('safe_is(A, hello)',
@@ -48,5 +44,8 @@ test('safe_is(A, hello)',
 test('safe_is(1 =:= sin(pi/2))') :- safe_is(1, sin(pi/2)).
 test('safe_is(-A, -3)', [A =:= 3]) :- safe_is(-A, -3).
 test('safe_is(-3, -A)', [A =:= 3]) :- safe_is(-3, -A).
+test('safe_is(-pi, A)', [A =:= -pi]) :- safe_is(-pi, A).
+test('safe_is(A, -pi)', [A =:= -pi]) :- safe_is(A, -pi).
+test('safe_is(-A, -pi)', [A =:= pi]) :- safe_is(-A, -pi).
 
 :- end_tests(utils).

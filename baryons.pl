@@ -3,7 +3,7 @@
                     nucleon/1,
                     quark_content/4
                    ]).
-:- use_module(utils).
+:- use_module(utils, [ground_semidet/2]).
 :- use_module(particles, [proper_anti_particle/2]).
 :- use_module(color_charge, [white/3, color/3, primary_color/3, anti_color/3]).
 :- use_module(quarks, []).

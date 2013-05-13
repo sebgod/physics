@@ -22,10 +22,16 @@
 :- multifile color_charge/2.
 :- multifile quantum_number_mf/3.
 
-%%	quantum_number(+NumberType, +AntiParticle, ?AntiNumber) is semidet.
+:- use_module(utils, [ground_semidet/2]).
+:- use_module(fermions, [fermion/1]).
+:- use_module(bosons, [elementary_boson/1]).
+:- use_module(hadrons, [classical_hadron/1]).
+:- use_module(color_charge, [color/3, anti_color/3]).
 
+%%	not_anti_particle(+Particle) is semidet.
 not_anti_particle(Particle) :- Particle \= anti(_).
 
+%%	quantum_number(+NumberType, +AntiParticle, ?AntiNumber) is semidet.
 particles:quantum_number(NumberType, Particle, Number) :-
     ground_semidet(Particle, not_anti_particle),
     particles:quantum_number_mf(NumberType, Particle, Number).
@@ -34,14 +40,6 @@ particles:quantum_number(NumberType, anti(AntiParticle), AntiNumber) :-
     proper_anti_particle(Particle, anti(AntiParticle)),
     particles:quantum_number_mf(NumberType, Particle, Number),
     AntiNumber is -Number.
-
-:- use_module(utils).
-:- use_module(quarks, []).
-:- use_module(fermions, [fermion/1]).
-:- use_module(bosons, [elementary_boson/1]).
-:- use_module(hadrons, [classical_hadron/1]).
-:- use_module(baryons, []).
-:- use_module(color_charge, [color/3, anti_color/3]).
 
 quantum_number(Q) :- ground_semidet(Q, quantum_number_nd).
 
@@ -61,7 +59,7 @@ conserved_quantum_number(electric_charge).
 conserved_quantum_number(x_charge).
 
 %%	particle(+Particle) is semidet.
-%%	particle(?Particle) is nondet.
+%%	particle(-Particle) is multi.
 particle(P) :- ground_semidet(P, particle_nd).
 particle_nd(P) :- elementary(P).
 particle_nd(P) :- combined(P).
@@ -95,3 +93,10 @@ particles:spin(AntiParticle, Spin) :-
     proper_anti_particle(Particle, AntiParticle),
     particles:spin(Particle, Spin).
 
+
+:- begin_tests(particles).
+
+test('proper_anti_particle(proton, anti(proton))') :-
+    proper_anti_particle(proton, anti(proton)).
+
+:- end_tests(particles).
