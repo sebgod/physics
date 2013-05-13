@@ -52,6 +52,14 @@ add(Atom, T0, TN) :- add(Atom, Atom, T0, TN).
 add(Atom, '', trie(Assoc, List0), trie(Assoc, ListN)) :-
     sort([Atom | List0], ListN), !.
 
+add(Atom, LeftChars0, trie(Assoc, List0), trie(Assoc, ListN)) :-
+    LeftChars0 \= '',
+    Atom \= LeftChars0,
+    length(List0, ListLength),
+    ListLength =< 3,
+    empty_assoc(Assoc),
+    sort([Atom | List0], ListN), !.
+
 add(Atom, LeftChars0, trie(Assoc0, List), trie(AssocN, List)) :-
     LeftChars0 \= '',
     prefix(Atom, LeftChars0, Prefix, LeftCharsN),
