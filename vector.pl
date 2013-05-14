@@ -7,7 +7,10 @@
                    sum/3,
                    difference/3,
                    inner_product/3,
-                   outer_product/3
+                   outer_product/3,
+                   cartesian_sign/2,
+                   quadrant/2,
+                   coordinate_transform/2
                   ]).
 
 %%	dimension(+CartVector, -Dim) is det.
@@ -96,3 +99,78 @@ outer_product(cv(A1, A2, A3), cv(B1, B2, B3), pseudo(cv(C1, C2, C3))) :-
     C2 is A3 * B1 - A1 * B3,
     C3 is A1 * B2 - A2 * B1.
 
+cartesian_sign(cv(X, Y), sign(SX, SY)) :-
+    SX is sign(X),
+    SY is sign(Y).
+sign_quadrant(sign(0, 0), origin).
+sign_quadrant(sign(+1, +1), q(i)).
+sign_quadrant(sign(-1, +1), q(ii)).
+sign_quadrant(sign(-1, -1), q(iii)).
+sign_quadrant(sign(+1, -1), q(iv)).
+
+quadrant(CV, Q) :-
+    cartesian_sign(CV, Sign),
+    once(sign_quadrant(Sign, Q)).
+
+coordinate_transform(A, B) :-
+    var(A),
+    ground(B),
+    !,
+    coordinate_transform_ft(B, A).
+
+coordinate_transform(A, B) :- coordinate_transform_ft(A, B).
+
+coordinate_transform_ft(cv(X, Y), pv(R, Theta)) :-
+    norm(cv(X, Y), R),
+    Theta is 2 * atan(Y / (X + R)).
+
+coordinate_transform_ft(pv(R, Theta), cv(X, Y)) :-
+    X is R * cos(Theta),
+    Y is R * sin(Theta).
+
+coordinate_transform_ft(cv(X, Y, Z), is(R, I, A)) :-
+    norm(cv(X, Y, Z), R),
+    I is acos(Z / R),
+    A is atan2(Y, X).
+
+coordinate_transform_ft(is(R, I, A), cv(X, Y,Z)) :-
+    SinI is sin(I),
+    X is R * SinI * cos(A),
+    Y is R * SinI * sin(A),
+    Z is R * cos(I).
+
+:- begin_tests(vector).
+
+test('sign(+,+)') :- cartesian_sign(cv(1,1), sign(+1,+1)).
+test('sign(+,-)') :- cartesian_sign(cv(1,-1), sign(+1,-1)).
+test('sign(0,0)') :- cartesian_sign(cv(0,0), sign(0,0)).
+
+test('quadrant(cv(1,1), q(i))') :- quadrant(cv(1,1), q(i)).
+test('quadrant(cv(-1,1), q(ii))') :- quadrant(cv(1,1), q(i)).
+test('quadrant(cv(-1,-1), q(iii))') :- quadrant(cv(1,1), q(i)).
+test('quadrant(cv(1,-1), q(iv))') :- quadrant(cv(1,1), q(i)).
+test('quadrant(cv(0,0), origin)') :- quadrant(cv(0,0), origin).
+
+test('coordinate_transform(cv-pv)',
+     setup((X0 = 1000, Y0 = -1000))) :-
+    coordinate_transform(cv(X0, Y0), PV),
+    coordinate_transform(PV, cv(X1,Y1)),
+    RoundX is round(X1),
+    RoundY is round(Y1),
+    assertion(RoundX =:= X0),
+    assertion(RoundY =:= Y0).
+
+test('coordinate_transform(cv-is)',
+     setup((X0 = 1000, Y0 = -1000, Z0 = 1000))
+    ) :-
+    coordinate_transform(cv(X0, Y0, Z0), SV),
+    coordinate_transform(SV, cv(X1,Y1, Z1)),
+    RoundX is round(X1),
+    RoundY is round(Y1),
+    RoundZ is round(Z1),
+    assertion(RoundX =:= X0),
+    assertion(RoundY =:= Y0),
+    assertion(RoundZ =:= Z0).
+
+
+:- end_tests(vector).
