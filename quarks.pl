@@ -7,6 +7,8 @@
 :- use_module(utils, [ground_semidet/2 as quark_semidet]).
 :- use_module(particles, [proper_anti_particle/2 as anti_quark]).
 :- use_module(color_charge).
+:- use_module(quantum_numbers, [quantum_number/3]).
+:- use_module(symbols, []).
 
 :- meta_predicate quark_semidet(?,1).
 
@@ -34,7 +36,7 @@ quark(Q) :-
     primary_color(Q, F, C),
     quark_color(C).
 
-particles:color_charge(Q, Color) :-
+color_charge:color_charge_mf(Q, Color) :-
     functor(Q, F, Args),
     Args > 0,
     flavour(F),
@@ -42,56 +44,60 @@ particles:color_charge(Q, Color) :-
 
 quark_type(Q, Type) :-
     quark(Q),
-    particles:quantum_number(electric_charge, Q, Charge),
+    quantum_number(electric_charge, Q, Charge),
     ChargeValue is Charge,
     (   ChargeValue >= 0
     ->  Type = up_type
     ;   Type = down_type
     ).
 
-particles:quantum_number_mf(FlavourNumber, Quark, 0) :-
+quantum_numbers:quantum_number_mf(FlavourNumber, Quark, 0) :-
     flavour(FlavourNumber),
     flavour(QuarkFlavour),
     QuarkFlavour \= FlavourNumber,
     color(Quark, QuarkFlavour, _Color).
 
-particles:quantum_number_mf(charm, charm(C), 1) :-      quark_color(C).
-particles:quantum_number_mf(strange, strange(C), -1) :- quark_color(C).
-particles:quantum_number_mf(top, top(C), 1) :-          quark_color(C).
-particles:quantum_number_mf(bottom, bottom(C), -1) :-   quark_color(C).
-
-particles:quantum_number_mf(electric_charge, up(C), +2 rdiv 3) :-
+quantum_numbers:quantum_number_mf(charm, charm(C), 1) :-
     quark_color(C).
-particles:quantum_number_mf(electric_charge, down(C), -1 rdiv 3) :-
+quantum_numbers:quantum_number_mf(strange, strange(C), -1) :-
     quark_color(C).
-particles:quantum_number_mf(electric_charge, charm(C), +2 rdiv 3) :-
+quantum_numbers:quantum_number_mf(top, top(C), 1) :-
     quark_color(C).
-particles:quantum_number_mf(electric_charge, strange(C), -1 rdiv 3) :-
-    quark_color(C).
-particles:quantum_number_mf(electric_charge, top(C), +2 rdiv 3) :-
-    quark_color(C).
-particles:quantum_number_mf(electric_charge, bottom(C), -1 rdiv 3) :-
+quantum_numbers:quantum_number_mf(bottom, bottom(C), -1) :-
     quark_color(C).
 
-particles:quantum_number_mf(isospin, top(C), +1 rdiv 2) :-
+quantum_numbers:quantum_number_mf(electric_charge, up(C), +2 rdiv 3) :-
     quark_color(C).
-particles:quantum_number_mf(isospin, down(C), -1 rdiv 2) :-
+quantum_numbers:quantum_number_mf(electric_charge, down(C), -1 rdiv 3) :-
+    quark_color(C).
+quantum_numbers:quantum_number_mf(electric_charge, charm(C), +2 rdiv 3) :-
+    quark_color(C).
+quantum_numbers:quantum_number_mf(electric_charge, strange(C), -1 rdiv 3) :-
+    quark_color(C).
+quantum_numbers:quantum_number_mf(electric_charge, top(C), +2 rdiv 3) :-
+    quark_color(C).
+quantum_numbers:quantum_number_mf(electric_charge, bottom(C), -1 rdiv 3) :-
     quark_color(C).
 
-particles:quantum_number_mf(baryon, Quark, +1 rdiv 3) :-
+quantum_numbers:quantum_number_mf(isospin, top(C), +1 rdiv 2) :-
+    quark_color(C).
+quantum_numbers:quantum_number_mf(isospin, down(C), -1 rdiv 2) :-
+    quark_color(C).
+
+quantum_numbers:quantum_number_mf(baryon, Quark, +1 rdiv 3) :-
     quark_semidet(Quark, quark).
 
-particles:symbol(AntiQuark, AntiSymbol) :-
+symbols:symbol_mf(AntiQuark, AntiSymbol) :-
     anti_quark(Quark, AntiQuark),
-    particles:symbol(Quark, QuarkSymbol),
+    symbols:symbol(Quark, QuarkSymbol),
     atom_concat('\u0305', QuarkSymbol, AntiSymbol).
 
-particles:symbol(up(_), u).
-particles:symbol(down(_), d).
-particles:symbol(charm(_), c).
-particles:symbol(strange(_), s).
-particles:symbol(top(_), t).
-particles:symbol(bottom(_), b).
+symbols:symbol_mf(up(_), u).
+symbols:symbol_mf(down(_), d).
+symbols:symbol_mf(charm(_), c).
+symbols:symbol_mf(strange(_), s).
+symbols:symbol_mf(top(_), t).
+symbols:symbol_mf(bottom(_), b).
 
 
 

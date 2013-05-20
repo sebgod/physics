@@ -6,10 +6,13 @@
                          color/3,
                          primary_color/3,
                          anti_color/3,
-                         gluon_color/1
+                         gluon_color/1,
+                         color_charge_mf/2
                         ]).
 
 :- use_module(library(lists)).
+
+:- multifile color_charge_mf/2.
 
 primary_color(red).
 primary_color(green).

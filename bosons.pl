@@ -6,7 +6,9 @@
                   ]).
 
 :- use_module(particles, []).
+:- use_module(quantum_numbers, [quantum_number/3]).
 :- use_module(color_charge, [gluon_color/1]).
+:- use_module(symbols, []).
 
 elementary_boson_type(photon).
 elementary_boson_type(w_boson).
@@ -19,7 +21,7 @@ elementary_boson_type(graviton).
 elementary_boson(anti(w_boson)).
 elementary_boson(P) :- elementary_boson_type(P).
 
-boson(P) :- particles:spin(P, 1).
+boson(P) :- quantum_number(spin, P, 1).
 
 gauge_boson(photon).
 gauge_boson(w_boson).
@@ -40,22 +42,22 @@ particles:anti_particle_self(gluon(C)) :- gluon_color(C).
 particles:anti_particle_self(higgs).
 particles:anti_particle_self(graviton).
 
-particles:quantum_number_mf(electric_charge, w_boson, -1).
+quantum_numbers:quantum_number_mf(electric_charge, w_boson, -1).
 
-particles:color_charge(gluon(GluonColor), GluonColor) :-
+color_charge:color_charge_mf(gluon(GluonColor), GluonColor) :-
     gluon_color(GluonColor).
 
-particles:spin(photon, 1).
-particles:spin(w_boson, 1).
-particles:spin(z_boson, 1).
-particles:spin(gluon(C), 1) :- gluon_color(C).
-particles:spin(higgs, 0).
-particles:spin(graviton, 2).
+quantum_numbers:quantum_number_mf(spin, photon, 1).
+quantum_numbers:quantum_number_mf(spin, w_boson, 1).
+quantum_numbers:quantum_number_mf(spin, z_boson, 1).
+quantum_numbers:quantum_number_mf(spin, gluon(C), 1) :- gluon_color(C).
+quantum_numbers:quantum_number_mf(spin, higgs, 0).
+quantum_numbers:quantum_number_mf(spin, graviton, 2).
 
-particles:symbol(photon, 'γ').
-particles:symbol(w_boson, 'W\u207B').
-particles:symbol(anti(w_boson), 'W⁺').
-particles:symbol(z_boson, 'Z').
-particles:symbol(gluon(C), g) :- gluon_color(C).
-particles:symbol(higgs, 'H\u2070').
-particles:symbol(graviton, 'G').
+symbols:symbol_mf(photon, 'γ').
+symbols:symbol_mf(w_boson, 'W\u207B').
+symbols:symbol_mf(anti(w_boson), 'W⁺').
+symbols:symbol_mf(z_boson, 'Z').
+symbols:symbol_mf(gluon(C), g) :- gluon_color(C).
+symbols:symbol_mf(higgs, 'H\u2070').
+symbols:symbol_mf(graviton, 'G').

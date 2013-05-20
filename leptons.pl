@@ -1,23 +1,21 @@
 :- module(leptons, [lepton/1]).
 
-:- use_module(particles, []).
+:- use_module(quantum_numbers, []).
 
-flavour(electron).
-flavour(neutrino(electron)).
-flavour(muon).
-flavour(neutrino(muon)).
-flavour(tau).
-flavour(neutrino(tau)).
+kind(electron).
+kind(muon).
+kind(tau).
 
-lepton(L) :- flavour(L).
-lepton(anti(L)) :- flavour(L).
+neutrino(neutrino(F)) :-kind(F).
 
-particles:quantum_number_mf(lepton, L, 1) :- flavour(L).
+lepton_flavour(L) :- kind(L).
+lepton_flavour(L) :- neutrino(L).
 
-particles:quantum_number_mf(electric_charge, electron, -1).
-particles:quantum_number_mf(electric_charge, muon, -1).
-particles:quantum_number_mf(electric_charge, tau, -1).
+lepton(L) :- lepton_flavour(L).
+lepton(anti(L)) :- lepton_flavour(L).
 
-particles:quantum_number_mf(electric_charge, neutrino(L), 0) :-
-    flavour(L),
-    L \= neutrino(_).
+quantum_numbers:quantum_number_mf(lepton, L, 1) :- lepton_flavour(L).
+
+quantum_numbers:quantum_number_mf(electric_charge, F, -1) :- kind(F).
+quantum_numbers:quantum_number_mf(electric_charge, neutrino(L), 0) :-
+    kind(L).

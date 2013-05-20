@@ -12,6 +12,9 @@
                              anti_color/3
                             ]).
 :- use_module(quarks, []).
+:- use_module(quantum_numbers, [quantum_number/1,
+                                quantum_number/3
+                               ]).
 
 :- meta_predicate classical_baryon_semidet(?,1).
 
@@ -42,15 +45,15 @@ quark_content_flavour(lambda(Quark), up, down, Quark) :-
 
 quark_number(QuantumNumber, QuarkFlavour, ValueN) :-
     color(Quark, QuarkFlavour, _),
-    (   particles:quantum_number(QuantumNumber, Quark, Value0)
+    (   quantum_number(QuantumNumber, Quark, Value0)
     ->  ValueN = Value0
     ;   ValueN = 0
     ),
     !.
 
-particles:quantum_number_mf(QuantumNumber, Baryon, Value) :-
+quantum_numbers:quantum_number_mf(QuantumNumber, Baryon, Value) :-
     classical_baryon(Baryon),
-    particles:quantum_number(QuantumNumber),
+    quantum_number(QuantumNumber),
     quark_content_flavour(Baryon, QF1, QF2, QF3),
     quark_number(QuantumNumber, QF1, FN1),
     quark_number(QuantumNumber, QF2, FN2),
