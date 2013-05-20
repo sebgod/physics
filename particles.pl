@@ -8,8 +8,8 @@
                       color_charge/2,
                       spin/2,
                       symbol/2,
-                      quantum_number/1,
                       quantum_number/3,
+                      quantum_number/1,
 					  quantum_number_mf/3,
                       conserved_quantum_number/1,
                       flavour_quantum_number/1
@@ -21,24 +21,24 @@
 :- multifile spin/2.
 :- multifile color_charge/2.
 :- multifile quantum_number_mf/3.
+:- multifile elementary/1.
+:- multifile combined/1.
 
 :- use_module(utils, [ground_semidet/2]).
-:- use_module(fermions, [fermion/1]).
-:- use_module(bosons, [elementary_boson/1]).
-:- use_module(hadrons, [classical_hadron/1]).
 :- use_module(color_charge, [color/3, anti_color/3]).
+
 
 %%	not_anti_particle(+Particle) is semidet.
 not_anti_particle(Particle) :- Particle \= anti(_).
 
 %%	quantum_number(+NumberType, +AntiParticle, ?AntiNumber) is semidet.
-particles:quantum_number(NumberType, Particle, Number) :-
+quantum_number(NumberType, Particle, Number) :-
     ground_semidet(Particle, not_anti_particle),
-    particles:quantum_number_mf(NumberType, Particle, Number).
+    quantum_number_mf(NumberType, Particle, Number).
 
-particles:quantum_number(NumberType, anti(AntiParticle), AntiNumber) :-
+quantum_number(NumberType, anti(AntiParticle), AntiNumber) :-
     proper_anti_particle(Particle, anti(AntiParticle)),
-    particles:quantum_number_mf(NumberType, Particle, Number),
+    quantum_number_mf(NumberType, Particle, Number),
     AntiNumber is -Number.
 
 quantum_number(Q) :- ground_semidet(Q, quantum_number_nd).
@@ -63,11 +63,6 @@ conserved_quantum_number(x_charge).
 particle(P) :- ground_semidet(P, particle_nd).
 particle_nd(P) :- elementary(P).
 particle_nd(P) :- combined(P).
-
-elementary(P) :- elementary_boson(P).
-elementary(P) :- fermion(P).
-
-combined(P) :- classical_hadron(P).
 
 %%	proper_anti_particle(+Particle, ?AntiParticle) is semidet.
 %%  proper_anti_particle(?Particle, +AntiParticle) is semidet.

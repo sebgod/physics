@@ -3,14 +3,21 @@
                     nucleon/1,
                     quark_content/4
                    ]).
-:- use_module(utils, [ground_semidet/2]).
-:- use_module(particles, [proper_anti_particle/2]).
-:- use_module(color_charge, [white/3, color/3, primary_color/3, anti_color/3]).
+:- use_module(utils, [ground_semidet/2 as classical_baryon_semidet]).
+:- use_module(particles, [proper_anti_particle/2 as anti_baryon]).
+:- use_module(color_charge, [
+                             white/3,
+                             color/3,
+                             primary_color/3,
+                             anti_color/3
+                            ]).
 :- use_module(quarks, []).
+
+:- meta_predicate classical_baryon_semidet(?,1).
 
 %%	baryon(+Particle) is semidet.
 %%  baryon(?Particle) is nondet.
-classical_baryon(P) :- ground_semidet(P, classical_baryon_nd).
+classical_baryon(P) :- classical_baryon_semidet(P, classical_baryon_nd).
 classical_baryon_nd(P) :- nucleon(P).
 classical_baryon_nd(P) :- lambda(P).
 
@@ -51,7 +58,7 @@ particles:quantum_number_mf(QuantumNumber, Baryon, Value) :-
     Value is FN1 + FN2 + FN3.
 
 quark_content(AntiBaryon, Q1, Q2, Q3) :-
-    proper_anti_particle(Baryon, AntiBaryon),
+    anti_baryon(Baryon, AntiBaryon),
     quark_content_flavour(Baryon, Fl1, Fl2, Fl3),
     white(C1, C2, C3),
     anti_color(Q1, Fl1, C1),

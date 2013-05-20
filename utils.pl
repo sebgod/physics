@@ -5,6 +5,8 @@
                  ]).
 :- meta_predicate ground_semidet(?,1).
 
+%%	ground_semidet(+Var, :Goal) is semidet.
+%%	ground_semidet(?Var, :Goal) is nondet.
 ground_semidet(Var, Goal) :-
     (   ground(Var)
     ->  call(Goal, Var), !
