@@ -1,8 +1,11 @@
 :- module(atoms, [
-                  atom/2,
-                  isotope/4,
+                  atom/5,
+                  isotope/3,
                   noble/1,
-                  noble_reversed/1,
+                  noble_gas_below/3,
+                  atom_block/2,
+                  block/3,
+                  atom_orbitals/2,
                   electron_configuration/1,
                   electron_configuration/2
                  ]).
@@ -10,68 +13,172 @@
 :- use_module(particle_taxonomy).
 :- use_module(symbols, []).
 :- use_module(quantum_numbers, []).
-:- use_module(utils, [ground_semidet/2 as atoms_semidet]).
+:- use_module(utils, [
+                      findnsols/4 as find_electron_configs,
+                      between2d/4 as in_block,
+                      ground_semidet/2 as atoms_semidet,
+                      ground_semidet/3 as block_semidet
+                     ]).
 
 :- meta_predicate atoms_semidet(?, 1).
+:- meta_predicate block_semidet(?, ?, 2).
+:- meta_predicate find_electron_configs(+, ?, :, -).
+
 
 symbols:symbol_mf(sharp, s).
 symbols:symbol_mf(principal, p).
 symbols:symbol_mf(diffuse, d).
 symbols:symbol_mf(fundamental, f).
 
-atom(h, 1).
-atom(he, 2).
-atom(li, 3).
-atom(be, 4).
-atom(b, 5).
-atom(c, 6).
-atom(n, 7).
-atom(o, 8).
-atom(f, 9).
-atom(ne, 10).
-atom(na, 11).
-atom(mg, 12).
-atom(al, 13).
-atom(si, 14).
-atom(p, 15).
-atom(s, 15).
-atom(cl, 17).
-atom(ar, 18).
-atom(k, 19).
-atom(ca, 20).
-atom(sc, 21).
-atom(ti , 22).
-atom(v, 23).
-atom(cr, 24).
-atom(mn, 25).
-atom(fe, 26).
-atom(co, 27).
-atom(ni, 28).
-atom(cu, 29).
-atom(zn, 30).
-atom(ga, 31).
-atom(ge, 32).
-atom(as, 33).
-atom(se, 34).
-atom(br, 35).
-atom(kr, 36).
-atom(rb, 37).
-atom(sr, 38).
-atom(y, 39).
-atom(zr, 40).
-atom(nb, 41).
-atom(mo, 42).
+atom(h,   1, hydrogen,    1, 1).
+atom(he,  2, helium,     18, 1).
+atom(li,  3, lithium,     1, 2).
+atom(be,  4, beryllium,   2, 2).
+atom(b,   5, boron,      13, 2).
+atom(c,   6, carbon,     14, 2).
+atom(n,   7, nitrogen,   15, 2).
+atom(o,   8, oxygen,     16, 2).
+atom(f,   9, flurine,    17, 2).
+atom(ne, 10, neon,       18, 2).
+atom(na, 11, sodium,      1, 3).
+atom(mg, 12, magnesium,   2, 3).
+atom(al, 13, aluminium,  13, 3).
+atom(si, 14, silicon,    14, 3).
+atom(p,  15, phosphorus, 15, 3).
+atom(s,  15, sulfur,     16, 3).
+atom(cl, 17, chlorine,   17, 3).
+atom(ar, 18, argon,      18, 3).
+atom(k,  19, potassium,   1, 4).
+atom(ca, 20, calcium,     2, 4).
+atom(sc, 21, scandium,    3, 4).
+atom(ti, 22, titanium,    4, 4).
+atom(v,  23, vanadium,    5, 4).
+atom(cr, 24, chromium,    6, 4).
+atom(mn, 25, manganese,   7, 4).
+atom(fe, 26, iron,        8, 4).
+atom(co, 27, cobalt,      9, 4).
+atom(ni, 28, nickel,     10, 4).
+atom(cu, 29, copper,     11, 4).
+atom(zn, 30, zinc,       12, 4).
+atom(ga, 31, gallium,    13, 4).
+atom(ge, 32, germanium,  14, 4).
+atom(as, 33, arsenic,    15, 4).
+atom(se, 34, selenium,   16, 4).
+atom(br, 35, bromine,    17, 4).
+atom(kr, 36, krypton,    18, 4).
+atom(rb, 37, ribidium,    1, 5).
+atom(sr, 38, strontium,   2, 5).
+atom(y,  39, yttrium,     3, 5).
+atom(zr, 40, zirconium,   4, 5).
+atom(nb, 41, niobium,     5, 5).
+atom(mo, 42, molybdenum,  6, 5).
+atom(tc, 43, technetium,  7, 5).
+atom(ru, 44, ruthenium,   8, 5).
+atom(rh, 45, rhodium,     9, 5).
+atom(pd, 46, palladium,  10, 5).
+atom(ag, 47, silver,     11, 5).
+atom(cd, 48, cadmium,    12, 5).
+atom(in, 49, indium,     13, 5).
+atom(sn, 50, tin,        14, 5).
+atom(sb, 51, antimony,   15, 5).
+atom(te, 52, tellerium,  16, 5).
+atom(i,  53, iodine,     17, 5).
+atom(xe, 54, xenon,      18, 5).
+atom(cs, 55, caesium,     1, 6).
+atom(ba, 56, barium,      2, 6).
+atom(la, 57, lanthanum,   l, 6).
+atom(ce, 58, cerium,      l, 6).
+atom(pr, 59, praseodymium,l, 6).
+atom(nd, 60, neodymium,   l, 6).
+atom(pm, 61, promethium,  l, 6).
+atom(sm, 62, samarium,    l, 6).
+atom(eu, 63, europium,    l, 6).
+atom(gd, 64, gadolinium,  l, 6).
+atom(tb, 65, terbium,     l, 6).
+atom(dy, 66, dysprosium,  l, 6).
+atom(ho, 67, holmium,     l, 6).
+atom(er, 68, erbium,      l, 6).
+atom(tm, 69, thulium,     l, 6).
+atom(yb, 70, ytterbium,   l, 6).
+atom(lu, 71, lutetium,    l(lu), 6).
+atom(hf, 72, hafnium,     4, 7).
+atom(ta, 73, tantalum,    5, 6).
+atom(w,  74, tungsten,    6, 6).
+atom(re, 75, rhenium,     7, 6).
+atom(os, 76, osmium,      8, 6).
+atom(ir, 77, iridium,     9, 6).
+atom(pt, 78, platinum,   10, 6).
+atom(au, 79, gold,       11, 6).
+atom(hg, 80, mercury,    12, 6).
+atom(tl, 81, thallium,   13, 6).
+atom(pb, 82, lead,       14, 6).
+atom(bi, 83, bismuth,    15, 6).
+atom(po, 84, polonium,   16, 6).
+atom(at, 85, astatine,   17, 6).
+atom(rn, 86, radon,      18, 6).
+atom(fr, 87, francium,    1, 7).
+atom(ra, 88, radium,      2, 7).
+atom(ac, 89, actinium,    a, 7).
+atom(th, 90, thorium,     a, 7).
+atom(pa, 91, protactinium,a, 7).
+atom(u,  92, uranium,     a, 7).
+atom(np, 93, neptunium,   a, 7).
+atom(pu, 94, plutonium,   a, 7).
+atom(am, 95, americium,   a, 7).
+atom(cm, 96, curium,      a, 7).
+atom(bk, 97, berkelium,   a, 7).
+atom(cf, 98, californium, a, 7).
+atom(es, 99, einsteinium, a, 7).
+atom(fm,100, fermium,     a, 7).
+atom(md,101, mendelevium, a, 7).
+atom(no,102, nobelium,    a, 7).
+atom(lr,103, lawrencium,  a(lr), 7).
+atom(rf,104, rutherfordium,4, 7).
+atom(db,105, dubnium,     5, 7).
+atom(sg,106, seaborgium,  6, 7).
+atom(bh,107, bohrium,     7, 7).
+atom(hs,108, hassium,     8, 7).
+atom(mt,109, meitnerium,  9, 7).
+atom(ds,110, darmstadtium,10, 7).
+atom(rg,111, roentgenium, 11, 7).
+atom(cn,112, copernicium, 12, 7).
+atom(uut,113,ununtrium,   13, 7).
+atom(fl,114, flerovium,   14, 7).
+atom(uup,115,ununpentium, 15, 7).
+atom(lv,116, livermorium, 16, 7).
+atom(uus,117,ununseptium, 17, 7).
+atom(uuo,118,ununoctium,  18, 7).
 
-isotope(h, hydrogen, 1, 0).
+
+isotope(h, protium, 0).
+isotope(h, deuterium, 1).
+isotope(h, tritium, 2).
+
+atom_block(Atom, Block) :-
+    atom(Atom, _, _, G, P),
+    block(P, G, Block).
+
+%%	block(+Period, +Group, -Block) is semidet.
+%%	block(?Period, ?Group, -Block) is nondet.
+block(P, G, B) :- block_semidet(P, G, block_nd(B)).
+
+%%	block_nd(?Block, ?Period, ?Group) is nondet.
+block_nd(1-s, 1, 1).
+block_nd(1-s, 1, 18).
+block_nd(4-f, 4, l).
+block_nd(5-f, 5, a).
+block_nd(5-d, 6, l(lu)).
+block_nd(6-d, 7, a(lr)).
+block_nd(P-s, P, G) :- in_block(2-7, 1-2, P, G).
+block_nd(P-p, P, G) :- in_block(2-7, 13-18, P, G).
+block_nd(P1-d, P, G) :-
+    in_block(3-7, 3-13, P, G),
+    utils:safe_is(P1, P - 1).
 
 noble(Atom) :- atoms_semidet(Atom, noble_nd).
 
-noble_reversed(Atom) :- atoms_semidet(Atom, noble_reversed_nd).
-
-noble_reversed_nd(Atom) :-
-    bagof(Noble, noble_nd(Noble), Nobles),
-    reverse(Nobles, Reversed),
-    member(Atom, Reversed).
+noble_gases(Nobles) :-
+    bagof(Noble, noble_nd(Noble), Nobles).
 
 noble_nd(he).
 noble_nd(ne).
@@ -93,44 +200,50 @@ azimuthal_magnetic(Azimuthal, Magnetic) :-
     Max is +LV,
     between(Min, Max, Magnetic).
 
+atom_orbitals(Atom, AggrOrbitals) :-
+    (   atom(Atom, AtomicNumber, _, _, _)
+    ->  Electrons = AtomicNumber
+    ;   number(Atom) -> Electrons = Atom
+    ),
+    electron_configuration(Electrons, Configs),
+    setof(P-L, ML^S^member(orbital(P, L, ML, S), Configs), Pairs),
+    maplist(atom_orbitals_count(Configs), Pairs, Shells),
+    (   Electrons > 2
+    ->  reduce_noble_shells(Electrons, Shells, AggrOrbitals)
+    ;   AggrOrbitals = Shells
+    ).
+
+atom_orbitals_count(Orbitals, P-L, shell(P, L, Count)) :-
+    aggregate_all(count, member(orbital(P, L, _, _), Orbitals), Count).
+
+electron_configuration(Electrons, Orbitals) :-
+    find_electron_configs(Electrons, O, electron_configuration(O), Orbitals).
+
 electron_configuration(orbital(P, L, M, S)) :-
     principal_number(P),
-    once(quantum_numbers:quantum_number(spin, electron, ElectronSpin)),
-    (   S is +ElectronSpin
-    ;   S is -ElectronSpin
-    ),
     principal_azimuthal(P, L),
+    (   S is +1 rdiv 2
+    ;   S is -1 rdiv 2
+    ),
     azimuthal_magnetic(L, M).
 
-electron_configuration(ElectronNumber, Orbitals) :-
-    electron_configuration(ElectronNumber, Orbitals, []).
+reduce_noble_shells(Electrons, Orbitals, AggrOrbitals) :-
+    bagof(Noble, noble_gas_below(Electrons, Noble, _), Nobles),
+    foldl(reduce_noble_shell, Nobles, Orbitals, AggrOrbitals).
 
-electron_configuration(1) -->
-    { once(electron_configuration(Orbital)) },
-    !,
-    [Orbital].
+reduce_noble_shell(Noble, Orbitals, AggrOrbitals) :-
+    (   atom_orbitals(Noble, NobleShell)
+    ->  append(NobleShell, OuterShell, Orbitals),
+        append([Noble], OuterShell, AggrOrbitals)
+    ;   AggrOrbitals = Orbitals
+    ).
 
-electron_configuration(ElectronNumber) -->
-    { ElectronNumber >= 2,
-      difference_from_nobel_gas(ElectronNumber, Gas, Rest)
-    },
-    [Gas],
-    electron_configuration_outer(Rest).
-
-electron_configuration_outer(0) --> [], !.
-electron_configuration_outer(ElectronNumber) -->
-    { ElectronNumber > 0,
-      E1 is ElectronNumber - 1
-    },
-    [],
-    electron_configuration_outer(E1).
-
-difference_from_nobel_gas(E, Noble, Rest) :-
-    noble_reversed(Noble),
-    atom(Noble, NobleNumber),
-    E >= NobleNumber,
-    utils:safe_is(Rest, E div NobleNumber),
-    !.
+noble_gas_below(E, Noble, Rest) :-
+    E > 1,
+    noble(Noble),
+    atom(Noble, NobleNumber, _, _, _),
+    E > NobleNumber,
+    utils:safe_is(Rest, E rem NobleNumber).
 
 quantum_numbers:quantum_number_mf(principal, p=P, P) :-
     principal_number(P).
@@ -138,27 +251,42 @@ quantum_numbers:quantum_number_mf(principal, p=P, P) :-
 quantum_numbers:quantum_number_mf(azimuthal, n=Principal, Azimuthal) :-
     principal_azimuthal(Principal, Azimuthal).
 
-% (   var(Char) -> (
-%                  Number >= 7,
-%                    Code is 0'k + Number - 7,
-%                    atom_codes(Char, Code))
-%    ;   Char = s -> Number = 0
-%    ;   Char = p -> Number = 1
-%    ;   Char = d -> Number = 2
-%    ;   Char = f -> Number = 3
-%    ;   Char = g -> Number = 4
-%    ;   Char = h -> Number = 5
-%    ;   Char = i -> Number = 6
-%    ;   ( var(Number),
-%          atom(Char),
-%          atom_length(Char, 1),
-%          atom_codes(Char, Code)
-%        )
-%    ->  Number is Code - 0'k,
-%        Number >= 7
-%                      ).
-
-quantum_numbers:qauntum_number_mf(magnetic, l=L, Ml) :-
+quantum_numbers:quantum_number_mf(magnetic, l=L, Ml) :-
     azimuthal_magnetic(L, Ml).
+
+symbols:symbol_mf(orbital(P, L, M, _), Symbol) :-
+    azimuthal_symbol(L, LS),
+    utils:term_sup(M, MS),
+    format(atom(Symbol), '~d~w~w', [P, LS, MS]).
+
+azimuthal_symbol(Number, Char) :-
+    (   var(Char), Number >= 7
+    ->  Code is 0'k + Number - 7, atom_codes(Char, Code)
+    ;   Number = 0 -> Char = s
+    ;   Number = 1 -> Char = p
+    ;   Number = 2 -> Char = d
+    ;   Number = 3 -> Char = f
+    ;   Number = 4 -> Char = g
+    ;   Number = 5 -> Char = h
+    ;   Number = 6 -> Char = i
+    ;   (
+         var(Number),
+         atom(Char),
+         atom_length(Char, 1),
+         atom_codes(Char, Code)
+        )
+    ->  Number is Code - 0'k,
+        Number >= 7
+    ).
+
+:- begin_tests(atoms).
+
+test('atom_block(he)', B == 1-s) :- atom_block(he, B).
+
+test('electron_spin', ElectronSpin = 1 rdiv 2) :-
+    once(quantum_numbers:quantum_number(spin, electron, ElectronSpin)).
+
+:- end_tests(atoms).
+
 
 
