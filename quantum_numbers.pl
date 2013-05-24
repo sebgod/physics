@@ -27,7 +27,7 @@ quantum_number(NumberType, anti(AntiParticle), AntiNumber) :-
     ;   AntiNumber is -Number
     ).
 
-quantum_number(Q) :- particle_ground_semidet(Q, quantum_number_nd).
+quantum_number(Q) :- particle_call_semidet(quantum_number_nd, Q).
 
 quantum_number_nd(Q) :- flavour_quantum_number(Q).
 quantum_number_nd(Q) :- conserved_quantum_number(Q).

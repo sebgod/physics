@@ -23,11 +23,14 @@
                       call_semidet_ground/3 as block_call_semidet,
                       call_semidet_ground_first/3 as noble_call_semidet
                      ]).
+:- use_module(library(apply), [foldl/4 as reduce_noble_shell_foldl]).
 
-:- meta_predicate atoms_call_semidet(1, ?).
-:- meta_predicate block_call_semidet(2, ?, ?).
-:- meta_predicate find_electron_configs(+, ?, :, -).
-:- meta_predicate noble_call_semidet(2, ?, ?).
+:- meta_predicate
+    atoms_call_semidet(1, ?),
+    block_call_semidet(2, ?, ?),
+    find_electron_configs(+, ?, :, -),
+    noble_call_semidet(2, ?, ?),
+    reduce_noble_shell_foldl(3, +, +, -).
 
 user:portray(shell(N, L, C)) :-
     N > 0, L >= 0, C > 0,
@@ -262,9 +265,8 @@ electron_configuration(orbital(P, L, M, S)) :-
 
 reduce_noble_shells(Electrons, Orbitals, AggrOrbitals) :-
     findall(Noble, noble_gas_below(Electrons, Noble, _), Nobles),
-    format('[~d] reduce nobles: ~p orbitals: ~p~n', [Electrons, Nobles, Orbitals]),
-
-    foldl(reduce_noble_shell, Nobles, Orbitals, AggrOrbitals).
+    reduce_noble_shell_foldl(reduce_noble_shell,
+                             Nobles, Orbitals, AggrOrbitals).
 
 reduce_noble_shell(Noble, Orbitals, AggrOrbitals) :-
     (   noble_shell(Noble, NobleShell)

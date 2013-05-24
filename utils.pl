@@ -20,7 +20,7 @@
 
 %%	call_semidet_ground(:Goal, +Var) is semidet.
 %%	call_semidet_ground(:Goal, ?Var) is nondet.
-call_semidet_ground(Var, Goal) :-
+call_semidet_ground(Goal, Var) :-
     (   ground(Var)
     ->  call(Goal, Var), !
     ;   call(Goal, Var)
@@ -28,7 +28,7 @@ call_semidet_ground(Var, Goal) :-
 
 %%	call_semidet_ground(:Goal, +V1, +V2) is semidet.
 %%	call_semidet_ground(:Goal, ?V1, ?V2) is nondet.
-call_semidet_ground(V1, V2, Goal) :-
+call_semidet_ground(Goal, V1, V2) :-
     (   ground(V1), ground(V2)
     ->  call(Goal, V1, V2), !
     ;   call(Goal, V1, V2)
@@ -36,7 +36,7 @@ call_semidet_ground(V1, V2, Goal) :-
 
 %%	call_semidet_ground_first(:Goal, +V1, ?V2) is semidet.
 %%	call_semidet_ground_first(:Goal, ?V1, ?V2) is nondet.
-call_semidet_ground_first(V1, V2, Goal) :-
+call_semidet_ground_first(Goal, V1, V2) :-
     (   ground(V1)
     ->  call(Goal, V1, V2), !
     ;   call(Goal, V1, V2)
