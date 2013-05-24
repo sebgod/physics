@@ -11,7 +11,7 @@
                  ]).
 
 :- use_module(particle_taxonomy).
-:- use_module(symbols, []).
+:- use_module(symbols, [symbol/2]).
 :- use_module(quantum_numbers, []).
 :- use_module(utils, [
                       findnsols/4 as find_electron_configs,
@@ -23,6 +23,13 @@
 :- meta_predicate atoms_semidet(?, 1).
 :- meta_predicate block_semidet(?, ?, 2).
 :- meta_predicate find_electron_configs(+, ?, :, -).
+
+user:portray(shell(N, L, C)) :-
+    N > 0,
+    L >= 0,
+    C > 0,
+    (   once(symbol(shell(N, L, C), SS)) ),
+    write(SS).
 
 
 symbols:symbol_mf(sharp, s).
@@ -177,9 +184,6 @@ block_nd(P1-d, P, G) :-
 
 noble(Atom) :- atoms_semidet(Atom, noble_nd).
 
-noble_gases(Nobles) :-
-    bagof(Noble, noble_nd(Noble), Nobles).
-
 noble_nd(he).
 noble_nd(ne).
 noble_nd(ar).
@@ -201,10 +205,8 @@ azimuthal_magnetic(Azimuthal, Magnetic) :-
     between(Min, Max, Magnetic).
 
 atom_orbitals(Atom, AggrOrbitals) :-
-    (   atom(Atom, AtomicNumber, _, _, _)
-    ->  Electrons = AtomicNumber
-    ;   number(Atom) -> Electrons = Atom
-    ),
+    atom(Atom, AtomicNumber, _, _, _),
+    Electrons = AtomicNumber,
     electron_configuration(Electrons, Configs),
     setof(P-L, ML^S^member(orbital(P, L, ML, S), Configs), Pairs),
     maplist(atom_orbitals_count(Configs), Pairs, Shells),
@@ -254,10 +256,10 @@ quantum_numbers:quantum_number_mf(azimuthal, n=Principal, Azimuthal) :-
 quantum_numbers:quantum_number_mf(magnetic, l=L, Ml) :-
     azimuthal_magnetic(L, Ml).
 
-symbols:symbol_mf(orbital(P, L, M, _), Symbol) :-
+symbols:symbol_mf(shell(P, L, Count), Symbol) :-
     azimuthal_symbol(L, LS),
-    utils:term_sup(M, MS),
-    format(atom(Symbol), '~d~w~w', [P, LS, MS]).
+    utils:term_sup(Count, CountSup),
+    format(atom(Symbol), '~d~w~w', [P, LS, CountSup]).
 
 azimuthal_symbol(Number, Char) :-
     (   var(Char), Number >= 7
