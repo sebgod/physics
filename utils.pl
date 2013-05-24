@@ -4,16 +4,17 @@
                   safe_is/2,
                   numeric_inverse/2,
                   term_sup/2,
+                  map_term_codes/3,
                   between2d/4,
                   findnsols/4
                  ]).
 :- meta_predicate
     ground_semidet(?,1),
-    ground_semidet(?, ?, 2).
-:- meta_predicate
+    ground_semidet(?, ?, 2),
     findnsols(+, ?, :, -),
     findnsols(+, ?, :, -, ?),
-    maxsols(*, 0).
+    maxsols(?, 0),
+    map_term_codes(2, +, ?).
 
 
     %%	ground_semidet(+Var, :Goal) is semidet.
@@ -51,15 +52,19 @@ numeric_inverse_(A, -B) :-
     B is -A.
 
 term_sup(Term, Symbol) :-
+    map_term_codes(term_sup_map, Term, Symbol).
+
+%%	map_term_codes(:Map, +Term, -Symbol) is det.
+map_term_codes(Map, Term, Symbol) :-
     term_to_atom(Term, Atom),
     atom_codes(Atom, AtomCodes),
     length(AtomCodes, Length),
     length(SymbolCodes, Length),
-    maplist(term_sup_map, AtomCodes, SymbolCodes),
+    maplist(Map, AtomCodes, SymbolCodes),
     atom_codes(Symbol, SymbolCodes).
 
 term_sup_map(Code, Sup) :-
-    (   between(0'4, 0'9, Code) -> Sup is 0x2070 + Code
+    (   between(0'4, 0'9, Code) -> Sup is 0x2070 + Code - 0'0
     ;   Code = 0'0 -> Sup = 0x2070
     ;   Code = 0'1 -> Sup = 0'¹
     ;   Code = 0'2 -> Sup = 0'²
