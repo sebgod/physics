@@ -18,6 +18,8 @@
     maxsols(?, 0),
     map_term_codes(2, +, ?).
 
+:- use_module(library(clpfd)).
+
 %%	call_semidet_ground(:Goal, +Var) is semidet.
 %%	call_semidet_ground(:Goal, ?Var) is nondet.
 call_semidet_ground(Goal, Var) :-
@@ -52,13 +54,17 @@ safe_is(A, B) :-
     ;   numeric_inverse(A, B)
     ).
 
+%%  numeric_inverse(+Number:number,+Number:number) is semidet.
+%%  numeric_inverse(?Number:number,?Number:number) is det.
+numeric_inverse(A, B)  :- ground(A), ground(B), !, -A =:= B. % green cut
 numeric_inverse(-A, B) :- numeric_inverse_(B, -A), !. % green cut
 numeric_inverse(A, -B) :- numeric_inverse_(A, -B).
 
 numeric_inverse_(A, -B) :-
-    _ is A,
     var(B),
-    B is -A.
+    (   ground(A) -> B is -A
+    ;   A #= -B
+    ).
 
 term_sup(Term, Symbol) :-
     map_term_codes(term_sup_map, Term, Symbol).
@@ -128,6 +134,10 @@ maxsols(N, Generator) :-
 
 :- begin_tests(utils).
 
+test('numeric_inverse(1, -1)') :- numeric_inverse(1, -1).
+
+test('safe_is(A, -B)', [-A =:= B]) :-
+    safe_is(A, -B), B = 4.
 test('safe_is(0,1)', [fail]) :- safe_is(0, 1).
 test('safe_is(A, 1)', [A =:= 1]) :- safe_is(A, 1).
 test('safe_is(pi, pi)') :- safe_is(pi, pi).
