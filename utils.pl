@@ -1,6 +1,7 @@
 ﻿:- module(utils, [
-                  ground_semidet/2,
-                  ground_semidet/3,
+                  call_semidet_ground/2,
+                  call_semidet_ground/3,
+                  call_semidet_ground_first/3,
                   safe_is/2,
                   numeric_inverse/2,
                   term_sup/2,
@@ -9,33 +10,41 @@
                   findnsols/4
                  ]).
 :- meta_predicate
-    ground_semidet(?,1),
-    ground_semidet(?, ?, 2),
+    call_semidet_ground(1, ?),
+    call_semidet_ground(2, ?, ?),
+    call_semidet_ground_first(2, ?,?),
     findnsols(+, ?, :, -),
     findnsols(+, ?, :, -, ?),
     maxsols(?, 0),
     map_term_codes(2, +, ?).
 
-
-    %%	ground_semidet(+Var, :Goal) is semidet.
-    %%	ground_semidet(?Var, :Goal) is nondet.
-    ground_semidet(Var, Goal) :-
+%%	call_semidet_ground(:Goal, +Var) is semidet.
+%%	call_semidet_ground(:Goal, ?Var) is nondet.
+call_semidet_ground(Var, Goal) :-
     (   ground(Var)
     ->  call(Goal, Var), !
     ;   call(Goal, Var)
     ).
 
-    %%	ground_semidet(+V1, +V2, :Goal) is semidet.
-    %%	ground_semidet(?V1, ?V2, :Goal) is nondet.
-    ground_semidet(V1, V2, Goal) :-
+%%	call_semidet_ground(:Goal, +V1, +V2) is semidet.
+%%	call_semidet_ground(:Goal, ?V1, ?V2) is nondet.
+call_semidet_ground(V1, V2, Goal) :-
     (   ground(V1), ground(V2)
     ->  call(Goal, V1, V2), !
     ;   call(Goal, V1, V2)
     ).
 
-    %%	safe_is(+A, +B) is semidet.
-    %%	safe_is(-A, +B) is det.
-    safe_is(A, B) :-
+%%	call_semidet_ground_first(:Goal, +V1, ?V2) is semidet.
+%%	call_semidet_ground_first(:Goal, ?V1, ?V2) is nondet.
+call_semidet_ground_first(V1, V2, Goal) :-
+    (   ground(V1)
+    ->  call(Goal, V1, V2), !
+    ;   call(Goal, V1, V2)
+    ).
+
+%%	safe_is(+A, +B) is semidet.
+%%	safe_is(-A, +B) is det.
+safe_is(A, B) :-
     (   A == B                -> A = B, _ is A
     ;   ground(B), var(A)     -> A is B
     ;   ground(A), var(B)     -> B is A
@@ -79,7 +88,7 @@ term_sup_map(Code, Sup) :-
     ).
 
 between2d(XR, YR, X, Y) :-
-    ground_semidet(X, Y, between2d_nd(XR, YR)).
+    call_semidet_ground(between2d_nd(XR, YR), X, Y).
 between2d_nd(Xmin-Xmax, Ymin-Ymax, X, Y) :-
     (   ground(X) -> number(X) ; true ),
     (   ground(Y) -> number(Y) ; true ),

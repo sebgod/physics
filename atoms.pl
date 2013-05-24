@@ -1,13 +1,16 @@
-:- module(atoms, [
+﻿:- module(atoms, [
                   atom/5,
+                  atomic_number/2,
                   isotope/3,
                   noble/1,
+                  noble_shell/2,
                   noble_gas_below/3,
                   atom_block/2,
                   block/3,
                   atom_orbitals/2,
                   electron_configuration/1,
-                  electron_configuration/2
+                  electron_configuration/2,
+                  electron_configuration_pairs/3
                  ]).
 
 :- use_module(particle_taxonomy).
@@ -16,21 +19,25 @@
 :- use_module(utils, [
                       findnsols/4 as find_electron_configs,
                       between2d/4 as in_block,
-                      ground_semidet/2 as atoms_semidet,
-                      ground_semidet/3 as block_semidet
+                      call_semidet_ground/2 as atoms_call_semidet,
+                      call_semidet_ground/3 as block_call_semidet,
+                      call_semidet_ground_first/3 as noble_call_semidet
                      ]).
 
-:- meta_predicate atoms_semidet(?, 1).
-:- meta_predicate block_semidet(?, ?, 2).
+:- meta_predicate atoms_call_semidet(1, ?).
+:- meta_predicate block_call_semidet(2, ?, ?).
 :- meta_predicate find_electron_configs(+, ?, :, -).
+:- meta_predicate noble_call_semidet(2, ?, ?).
 
 user:portray(shell(N, L, C)) :-
-    N > 0,
-    L >= 0,
-    C > 0,
+    N > 0, L >= 0, C > 0,
     (   once(symbol(shell(N, L, C), SS)) ),
     write(SS).
 
+user:portray(orbital(N, L, ML, S)) :-
+    N > 0, L >= 0, integer(ML), rational(S),
+    (   once(symbol(orbital(N, L, ML, S), OS)) ),
+    write(OS).
 
 symbols:symbol_mf(sharp, s).
 symbols:symbol_mf(principal, p).
@@ -167,7 +174,7 @@ atom_block(Atom, Block) :-
 
 %%	block(+Period, +Group, -Block) is semidet.
 %%	block(?Period, ?Group, -Block) is nondet.
-block(P, G, B) :- block_semidet(P, G, block_nd(B)).
+block(P, G, B) :- block_call_semidet(block_nd(B), P, G).
 
 %%	block_nd(?Block, ?Period, ?Group) is nondet.
 block_nd(1-s, 1, 1).
@@ -182,7 +189,7 @@ block_nd(P1-d, P, G) :-
     in_block(3-7, 3-13, P, G),
     utils:safe_is(P1, P - 1).
 
-noble(Atom) :- atoms_semidet(Atom, noble_nd).
+noble(Atom) :- atoms_call_semidet(noble_nd, Atom).
 
 noble_nd(he).
 noble_nd(ne).
@@ -191,24 +198,26 @@ noble_nd(kr).
 noble_nd(xe).
 noble_nd(rn).
 
-principal_number(Principal) :-
-    between(0, inf, Principal).
+atomic_number(Atom, AtomicNumber) :-
+    atom(Atom),
+    !,
+    atom_length(Atom, Length),
+    (   Length > 2
+    ->  atom(_, AtomicNumber, Atom, _, _)
+    ;   atom(Atom, AtomicNumber, _, _, _)
+    ).
 
-principal_azimuthal(Principal, Azimuthal) :-
-    number(Principal),
-    Max is Principal - 1,
-    between(0, Max, Azimuthal).
-azimuthal_magnetic(Azimuthal, Magnetic) :-
-    utils:safe_is(LV, Azimuthal),
-    Min is -LV,
-    Max is +LV,
-    between(Min, Max, Magnetic).
+atomic_number(Atom, AtomicNumber) :-
+    var(Atom), atom(Atom, AtomicNumber, _, _, _).
+
+electron_configuration_pairs(Electrons, Configs, Pairs) :-
+    electron_configuration(Electrons, Configs),
+    setof(P-L, ML^S^member(orbital(P, L, ML, S), Configs), Pairs).
 
 atom_orbitals(Atom, AggrOrbitals) :-
-    atom(Atom, AtomicNumber, _, _, _),
+    atomic_number(Atom, AtomicNumber),
     Electrons = AtomicNumber,
-    electron_configuration(Electrons, Configs),
-    setof(P-L, ML^S^member(orbital(P, L, ML, S), Configs), Pairs),
+    electron_configuration_pairs(Electrons, Configs, Pairs),
     maplist(atom_orbitals_count(Configs), Pairs, Shells),
     (   Electrons > 2
     ->  reduce_noble_shells(Electrons, Shells, AggrOrbitals)
@@ -218,11 +227,33 @@ atom_orbitals(Atom, AggrOrbitals) :-
 atom_orbitals_count(Orbitals, P-L, shell(P, L, Count)) :-
     aggregate_all(count, member(orbital(P, L, _, _), Orbitals), Count).
 
+principal_number(Principal) :-
+    principal_number(inf, Principal).
+principal_number(Max, Principal) :-
+    between(1, Max, Principal).
+
+azimuthal_number(Max, Azimuthal) :-
+    between(0, Max, Azimuthal).
+
+principal_azimuthal(Principal, Azimuthal) :-
+    Principal >= 1,
+    Max is Principal - 1,
+    azimuthal_number(Max, Azimuthal).
+azimuthal_magnetic(Azimuthal, Magnetic) :-
+    utils:safe_is(LV, Azimuthal),
+    Min is -LV,
+    Max is +LV,
+    between(Min, Max, Magnetic).
+
 electron_configuration(Electrons, Orbitals) :-
-    find_electron_configs(Electrons, O, electron_configuration(O), Orbitals).
+    find_electron_configs(Electrons, O,
+                          electron_configuration(O), Orbitals).
 
 electron_configuration(orbital(P, L, M, S)) :-
-    principal_number(P),
+    principal_number(PL),
+    principal_number(PL, P),
+    azimuthal_number(PL, L),
+    PL =:= P + L,
     principal_azimuthal(P, L),
     (   S is +1 rdiv 2
     ;   S is -1 rdiv 2
@@ -230,14 +261,28 @@ electron_configuration(orbital(P, L, M, S)) :-
     azimuthal_magnetic(L, M).
 
 reduce_noble_shells(Electrons, Orbitals, AggrOrbitals) :-
-    bagof(Noble, noble_gas_below(Electrons, Noble, _), Nobles),
+    findall(Noble, noble_gas_below(Electrons, Noble, _), Nobles),
+    format('[~d] reduce nobles: ~p orbitals: ~p~n', [Electrons, Nobles, Orbitals]),
+
     foldl(reduce_noble_shell, Nobles, Orbitals, AggrOrbitals).
 
 reduce_noble_shell(Noble, Orbitals, AggrOrbitals) :-
-    (   atom_orbitals(Noble, NobleShell)
+    (   noble_shell(Noble, NobleShell)
     ->  append(NobleShell, OuterShell, Orbitals),
         append([Noble], OuterShell, AggrOrbitals)
     ;   AggrOrbitals = Orbitals
+    ).
+
+noble_shell(Noble, Shell) :-
+    noble_call_semidet(noble_shell_nd, Noble, Shell).
+
+:- dynamic noble_shell_dyn/2.
+noble_shell_nd(Noble, NobleShell) :-
+    (   noble_shell_dyn(Noble, NobleShell)
+    ;   atom_orbitals(Noble, NobleShell),
+        atom(Noble),
+        noble(Noble),
+        assert(noble_shell_dyn(Noble, NobleShell))
     ).
 
 noble_gas_below(E, Noble, Rest) :-
@@ -260,6 +305,14 @@ symbols:symbol_mf(shell(P, L, Count), Symbol) :-
     azimuthal_symbol(L, LS),
     utils:term_sup(Count, CountSup),
     format(atom(Symbol), '~d~w~w', [P, LS, CountSup]).
+
+symbols:symbol_mf(orbital(P, L, ML, S), Symbol) :-
+    azimuthal_symbol(L, LS),
+    utils:term_sup(ML, MLSup),
+    (   utils:safe_is(S, +1 rdiv 2) -> SS = '↑'
+    ;   utils:safe_is(S, -1 rdiv 2) -> SS = '↓'
+    ),
+    format(atom(Symbol), '~d~w~w~w', [P, LS, MLSup, SS]).
 
 azimuthal_symbol(Number, Char) :-
     (   var(Char), Number >= 7
@@ -287,6 +340,9 @@ test('atom_block(he)', B == 1-s) :- atom_block(he, B).
 
 test('electron_spin', ElectronSpin = 1 rdiv 2) :-
     once(quantum_numbers:quantum_number(spin, electron, ElectronSpin)).
+
+test('atomic_number(h, 1)') :- atomic_number(h, 1).
+test('atomic_number(carbon, 1)') :- atomic_number(carbon, 6).
 
 :- end_tests(atoms).
 

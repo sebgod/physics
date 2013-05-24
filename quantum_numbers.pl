@@ -6,9 +6,9 @@
                             flavour_quantum_number/1]).
 :- use_module(lorentz_group, [lorentz_covariant/1]).
 :- use_module(particles, []).
-:- use_module(utils, [ground_semidet/2 as particle_ground_semidet]).
+:- use_module(utils, [call_semidet_ground/2 as particle_call_semidet]).
 
-:- meta_predicate particle_ground_semidet(?, 1).
+:- meta_predicate particle_call_semidet(1, ?).
 
 :- multifile quantum_number_mf/3.
 
@@ -16,7 +16,7 @@ lorenz_group:lorentz_covariant_mf(spin).
 
 %%	quantum_number(+NumberType, +AntiParticle, ?AntiNumber) is semidet.
 quantum_number(NumberType, Particle, Number) :-
-    particle_ground_semidet(Particle, particles:not_anti_particle),
+    particle_call_semidet(particles:not_anti_particle, Particle),
     quantum_number_mf(NumberType, Particle, Number).
 
 quantum_number(NumberType, anti(AntiParticle), AntiNumber) :-

@@ -4,13 +4,13 @@
                    quark_type/2
                  ]).
 
-:- use_module(utils, [ground_semidet/2 as quark_semidet]).
+:- use_module(utils, [call_semidet_ground/2 as quark_call_semidet]).
 :- use_module(particles, [proper_anti_particle/2 as anti_quark]).
 :- use_module(color_charge).
 :- use_module(quantum_numbers, [quantum_number/3]).
 :- use_module(symbols, []).
 
-:- meta_predicate quark_semidet(?,1).
+:- meta_predicate quark_call_semidet(1, ?).
 
 flavour(up).
 flavour(down).
@@ -21,17 +21,19 @@ flavour(bottom).
 
 quark_color(Color) :- primary_color(Color).
 
-quark(anti(Q)) :-
+quark(Q) :- quark_call_semidet(quark_nd, Q).
+
+quark_nd(anti(Q)) :-
     (   compound(Q) ->  true ; flavour(F) ),
     anti_color(anti(Q), F, _).
-quark(Q) :-
+quark_nd(Q) :-
     compound(Q),
     ground(Q),
     !,
     color(Q, F, C),
     flavour(F),
     quark_color(C).
-quark(Q) :-
+quark_nd(Q) :-
     flavour(F),
     primary_color(Q, F, C),
     quark_color(C).
@@ -85,7 +87,7 @@ quantum_numbers:quantum_number_mf(isospin, down(C), -1 rdiv 2) :-
     quark_color(C).
 
 quantum_numbers:quantum_number_mf(baryon, Quark, +1 rdiv 3) :-
-    quark_semidet(Quark, quark).
+    quark(Quark).
 
 symbols:symbol_mf(AntiQuark, AntiSymbol) :-
     anti_quark(Quark, AntiQuark),

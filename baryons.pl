@@ -3,7 +3,7 @@
                     nucleon/1,
                     quark_content/4
                    ]).
-:- use_module(utils, [ground_semidet/2 as classical_baryon_semidet]).
+:- use_module(utils, [call_semidet_ground/2 as baryons_call_semidet]).
 :- use_module(particles, [proper_anti_particle/2 as anti_baryon]).
 :- use_module(color_charge, [
                              white/3,
@@ -16,11 +16,11 @@
                                 quantum_number/3
                                ]).
 
-:- meta_predicate classical_baryon_semidet(?,1).
+:- meta_predicate classical_baryon_semidet(1, ?).
 
 %%	baryon(+Particle) is semidet.
 %%  baryon(?Particle) is nondet.
-classical_baryon(P) :- classical_baryon_semidet(P, classical_baryon_nd).
+classical_baryon(P) :- baryons_call_semidet(classical_baryon_nd, P).
 classical_baryon_nd(P) :- nucleon(P).
 classical_baryon_nd(P) :- lambda(P).
 
