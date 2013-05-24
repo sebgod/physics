@@ -5,6 +5,7 @@
                   safe_is/2,
                   numeric_inverse/2,
                   term_sup/2,
+                  term_sub/2,
                   map_term_codes/3,
                   between2d/4,
                   findnsols/4
@@ -69,7 +70,11 @@ numeric_inverse_(A, -B) :-
 term_sup(Term, Symbol) :-
     map_term_codes(term_sup_map, Term, Symbol).
 
-%%	map_term_codes(:Map, +Term, -Symbol) is det.
+term_sub(Term, Symbol) :-
+    map_term_codes(term_sub_map, Term, Symbol).
+
+
+%%	map_term_codes(:Map, +Term, -Symbol) is semidet.
 map_term_codes(Map, Term, Symbol) :-
     term_to_atom(Term, Atom),
     atom_codes(Atom, AtomCodes),
@@ -78,6 +83,15 @@ map_term_codes(Map, Term, Symbol) :-
     maplist(Map, AtomCodes, SymbolCodes),
     atom_codes(Symbol, SymbolCodes).
 
+term_sub_map(Code, Sub) :-
+    (   between(0'0, 0'9, Code) -> Sub is 0x2080 + Code - 0'0
+    ;   Code = 0'+ -> Sub = 0'₊
+    ;   Code = 0'- -> Sub = 0'₋
+    ;   Code = 0'= -> Sub = 0x208c
+    ;   Code = 0x28 -> Sub = 0x208d
+    ;   Code = 0x29 -> Sub = 0x208e
+    ;   Code = 0xa0 -> Sub = 0xa0
+    ).
 term_sup_map(Code, Sup) :-
     (   between(0'4, 0'9, Code) -> Sup is 0x2070 + Code - 0'0
     ;   Code = 0'0 -> Sup = 0x2070
