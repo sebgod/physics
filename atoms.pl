@@ -171,12 +171,19 @@ atom(lv,116, livermorium, 16, 7).
 atom(uus,117,ununseptium, 17, 7).
 atom(uuo,118,ununoctium,  18, 7).
 
-normalize(Atom, Normalized) :-
-    atoms_call_semidet_first(normalize_nd, Atom, Normalized).
+normalize(atoms:Atom, atoms:Atom) :- atom(Atom), !, atom(Atom, _, _, _, _).
 
-normalize_nd(atoms:Atom, atoms:Atom).
-normalize_nd(Name, atoms:Atom) :- atom(Atom, _, Name, _, _).
-normalize_nd(Atom, atoms:Atom) :- atom(Atom, _, _, _, _).
+normalize(Atom0, atoms:Atom) :-
+    atom(Atom0),
+    !,
+    atom_length(Atom0, Length),
+    (   Length =< 3 -> atom(Atom0, _, _, _, _),
+        Atom = Atom0
+    ;    atom(Atom, _, Atom0, _, _)
+    ).
+normalize(Atom, atoms:Atom) :-
+    var(Atom),
+    atom(Atom, _, _, _, _).
 
 isotope(h, protium, 0).
 isotope(h, deuterium, 1).
@@ -224,7 +231,9 @@ electron_configuration_pairs(Electrons, Configs, Pairs) :-
     setof(P-L, ML^S^member(orbital(P, L, ML, S), Configs), Pairs).
 
 atom_orbitals(Atom, AggrOrbitals) :-
-    atomic_number(Atom, AtomicNumber),
+    (   var(Atom) -> atomic_number(_, AtomicNumber, Atom)
+    ;   atomic_number(Atom, AtomicNumber)
+    ),
     Electrons = AtomicNumber,
     electron_configuration_pairs(Electrons, Configs, Pairs),
     maplist(atom_orbitals_count(Configs), Pairs, Shells),
