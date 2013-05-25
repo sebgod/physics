@@ -15,7 +15,7 @@
                  ]).
 
 :- use_module(particle_taxonomy).
-:- use_module(symbols, [symbol/2]).
+:- use_module(symbols, [write_symbol/1]).
 :- use_module(quantum_numbers, []).
 :- use_module(utils, [
                       findnsols/4 as find_electron_configs,
@@ -33,7 +33,7 @@
     atoms_call_semidet_first(2, ?, ?),
     reduce_noble_shell_foldl(3, +, +, -).
 
-write_symbol(Obj) :- once(symbol(Obj, Symbol)), write(Symbol).
+:- dynamic noble_shell_dyn/2.
 
 user:portray(shell(N, L, C)) :-
     N > 0, L >= 0, C > 0,
@@ -45,6 +45,7 @@ user:portray(orbital(N, L, ML, S)) :-
 
 user:portray(atoms:Atom) :-
     atom(Atom),
+    atom(Atom, _, _, _, _),
     write_symbol(atoms:Atom).
 
 symbols:symbol_mf(sharp, s).
@@ -213,6 +214,14 @@ block_nd(P1-d, P, G) :-
 noble(Atom) :- normalize(Atom, Normalized), noble_(Normalized).
 noble_(atoms:Atom) :- atoms_call_semidet(noble_nd, Atom).
 
+noble_shell(Noble, Shell) :-
+    noble(Noble),
+    (   noble_shell_dyn(Noble, Shell)
+    ->  true
+    ;   atoms_call_semidet_first(atom_orbitals, Noble, Shell),
+        assert(noble_shell_dyn(Noble, Shell))
+    ).
+
 noble_nd(he).
 noble_nd(ne).
 noble_nd(ar).
@@ -290,18 +299,6 @@ reduce_noble_shell(Noble, Orbitals, AggrOrbitals) :-
     ;   AggrOrbitals = Orbitals
     ).
 
-noble_shell(Noble, Shell) :-
-    atoms_call_semidet_first(noble_shell_nd, Noble, Shell).
-
-:- dynamic noble_shell_dyn/2.
-noble_shell_nd(Noble, NobleShell) :-
-    (   noble_shell_dyn(Noble, NobleShell)
-    ;   atom_orbitals(Noble, NobleShell),
-        atom(Noble),
-        noble(Noble),
-        assert(noble_shell_dyn(Noble, NobleShell))
-    ).
-
 noble_gas_below(E, Noble, Rest) :-
     E > 1,
     noble(Noble),
@@ -321,12 +318,12 @@ quantum_numbers:quantum_number_mf(magnetic, l=L, Ml) :-
 symbols:symbol_mf(atoms:Atom, Symbol) :-
     atomic_number(atoms:Atom, AtomicNumber),
     utils:term_sub(AtomicNumber, AtomicNumberSub),
-    format(atom(Symbol), '~w~w', [AtomicNumberSub, Atom]).
+    format(atom(Symbol), '~a~a~a', [AtomicNumberSub, x, Atom]).
 
 symbols:symbol_mf(shell(P, L, Count), Symbol) :-
     azimuthal_symbol(L, LS),
     utils:term_sup(Count, CountSup),
-    format(atom(Symbol), '~d~w~w', [P, LS, CountSup]).
+    format(atom(Symbol), '~d~a~a', [P, LS, CountSup]).
 
 symbols:symbol_mf(orbital(P, L, ML, S), Symbol) :-
     azimuthal_symbol(L, LS),
@@ -368,6 +365,12 @@ test('electron_spin', ElectronSpin = 1 rdiv 2) :-
 
 test('atomic_number(h, 1)') :- atomic_number(atoms:h, 1).
 test('atomic_number(carbon, 1)') :- atomic_number(carbon, 6).
+
+test('atom_orbitals(h)') :- atom_orbitals(h, [shell(1, 0, 1)]).
+test('atom_orbitals(he)') :- atom_orbitals(he, [shell(1, 0, 2)]).
+test('atom_orbitals(li)') :- atom_orbitals(li, [he, shell(2, 0, 1)]).
+
+
 
 :- end_tests(atoms).
 
