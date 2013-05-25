@@ -1,8 +1,9 @@
 ﻿:- module(atoms, [
                   atom/5,
-                  normalize/2,
+                  nuclide/2,
                   atomic_number/2,
                   isotope/3,
+                  most_abundant_isotope/3,
                   noble/1,
                   noble_shell/2,
                   noble_gas_below/3,
@@ -43,10 +44,16 @@ user:portray(orbital(N, L, ML, S)) :-
     N > 0, L >= 0, integer(ML), rational(S),
     write_symbol(orbital(N, L, ML, S)).
 
-user:portray(atoms:Atom) :-
+user:portray(atom(Atom)) :-
     atom(Atom),
     atom(Atom, _, _, _, _),
-    write_symbol(atoms:Atom).
+    write_symbol(atom(Atom)).
+
+user:portray(nuclide(Atom, Neutron, Ionization)) :-
+    atom(Atom),
+    integer(Neutron),
+    integer(Ionization),
+    write_symbol(nuclide(Atom, Neutron, Ionization)).
 
 symbols:symbol_mf(sharp, s).
 symbols:symbol_mf(principal, p).
@@ -172,23 +179,87 @@ atom(lv,116, livermorium, 16, 7).
 atom(uus,117,ununseptium, 17, 7).
 atom(uuo,118,ununoctium,  18, 7).
 
-normalize(atoms:Atom, atoms:Atom) :- atom(Atom), !, atom(Atom, _, _, _, _).
+proper_isotope_name(h-1, protium).
+proper_isotope_name(h-2, deuterium).
+proper_isotope_name(h-3, tritium).
 
-normalize(Atom0, atoms:Atom) :-
-    atom(Atom0),
-    !,
-    atom_length(Atom0, Length),
-    (   Length =< 3 -> atom(Atom0, _, _, _, _),
-        Atom = Atom0
-    ;    atom(Atom, _, Atom0, _, _)
+isotope(h, 0, 0.999885).
+isotope(h, 1, 0.000115).
+isotope(h, 2, trace).
+isotope(h, 3, decayed(he-3)).
+isotope(h, 4, decayed(he-3)).
+isotope(h, 5, decayed(he-3)).
+isotope(h, 6, decayed(he-3)).
+isotope(h, 7, decayed(he-3)).
+
+isotope(he, 2, 0.99999866).
+isotope(he, 1, 0.00000134).
+isotope(he, 0, syn).
+isotope(he, 4, syn).
+isotope(he, 5, syn).
+isotope(he, 6, syn).
+isotope(he, 7, syn).
+isotope(he, 8, syn).
+
+isotope(li, 4, 0.92275).
+isotope(li, 3, 0.07714).
+isotope(li, 1, syn).
+isotope(li, 2, syn).
+isotope(li, 5, syn).
+isotope(li, 6, syn).
+isotope(li, 7, syn).
+isotope(li, 8, syn).
+isotope(li, 9, syn).
+
+isotope(ne, 10, 0.9048).
+isotope(ne, 11, 0.0027).
+isotope(ne, 12, 0.0925).
+
+isotope(ar, 22, 0.996035).
+isotope(ar, 18, 0.003336).
+isotope(ar, 20, 0.000629).
+isotope(ar, 24, trace).
+
+isotope(kr, 48, 0.56987).
+isotope(kr, 50, 0.17279).
+isotope(kr, 46, 0.11593).
+isotope(kr, 47, 0.11500).
+isotope(kr, 44, 0.02286).
+isotope(kr, 42, 0.00355).
+isotope(kr, 45, trace).
+isotope(kr, 49, trace).
+
+isotope(xe, 78, 0.269086).
+isotope(xe, 75, 0.264006).
+isotope(xe, 80, 0.104357).
+
+most_abundant_isotope(Atom, nuclide(Atom, N, 0), MoleFrac) :-
+    isotope(Atom, N, MoleFrac),
+    number(MoleFrac),
+    !.
+
+nuclide(Atom0, Nuclide) :-
+    (   atom(Atom0)
+    ->  atom_length(Atom0, Length),
+        (   Length =< 3 -> atom(Atom0, _, _, _, _),
+            Atom = Atom0
+        ;   atom(Atom, _, Atom0, _, _)
+        ),
+        !,
+        nuclide_nd(atom(Atom), Nuclide)
+    ;   Atom0 = atom(Atom) -> nuclide_nd(Atom0, Nuclide)
+    ;   Atom0 = nuclide(_, _, _) -> nuclide_nd(Atom0, Nuclide)
     ).
-normalize(Atom, atoms:Atom) :-
-    var(Atom),
-    atom(Atom, _, _, _, _).
 
-isotope(h, protium, 0).
-isotope(h, deuterium, 1).
-isotope(h, tritium, 2).
+nuclide_nd(nuclide(Atom, Neutron, Ionization), nuclide(Atom, Neutron, Ionization)) :-
+    isotope(Atom, Neutron, _),
+    atomic_number(Atom, AtomicNumber),
+    Min is -2 * AtomicNumber,
+    between(Min, AtomicNumber, Ionization).
+
+nuclide_nd(atom(Atom), nuclide(Atom, Neutrons, 0)) :-
+    atom(Atom, _, _, _, _),
+    once(isotope(Atom, Neutrons, _)).
 
 atom_block(Atom, Block) :-
     atom(Atom, _, _, G, P),
@@ -211,8 +282,9 @@ block_nd(P1-d, P, G) :-
     in_block(3-7, 3-13, P, G),
     utils:safe_is(P1, P - 1).
 
-noble(Atom) :- normalize(Atom, Normalized), noble_(Normalized).
-noble_(atoms:Atom) :- atoms_call_semidet(noble_nd, Atom).
+noble(Atom0) :-
+    nuclide(Atom0, nuclide(Atom, _, _)),
+    atoms_call_semidet(noble_nd, Atom).
 
 noble_shell(Noble, Shell) :-
     noble(Noble),
@@ -229,21 +301,18 @@ noble_nd(kr).
 noble_nd(xe).
 noble_nd(rn).
 
-atomic_number(Atom, AtomicNumber) :-
-    atomic_number(Atom, AtomicNumber, _).
-atomic_number(Atom, AtomicNumber, atoms:Symbol) :-
-    normalize(Atom, atoms:Symbol),
-    atom(Symbol, AtomicNumber, _, _, _).
+atomic_number(Atom0, AtomicNumber) :-
+    nuclide(Atom0, nuclide(Atom, _, _)),
+    atom(Atom, AtomicNumber, _, _, _).
 
 electron_configuration_pairs(Electrons, Configs, Pairs) :-
     electron_configuration(Electrons, Configs),
     setof(P-L, ML^S^member(orbital(P, L, ML, S), Configs), Pairs).
 
-atom_orbitals(Atom, AggrOrbitals) :-
-    (   var(Atom) -> atomic_number(_, AtomicNumber, Atom)
-    ;   atomic_number(Atom, AtomicNumber)
-    ),
-    Electrons = AtomicNumber,
+atom_orbitals(Atom0, AggrOrbitals) :-
+    nuclide(Atom0, nuclide(Atom, _N, Ionization)),
+    atomic_number(Atom, AtomicNumber),
+    Electrons is AtomicNumber - Ionization,
     electron_configuration_pairs(Electrons, Configs, Pairs),
     maplist(atom_orbitals_count(Configs), Pairs, Shells),
     (   Electrons > 2
@@ -315,10 +384,23 @@ quantum_numbers:quantum_number_mf(azimuthal, n=Principal, Azimuthal) :-
 quantum_numbers:quantum_number_mf(magnetic, l=L, Ml) :-
     azimuthal_magnetic(L, Ml).
 
-symbols:symbol_mf(atoms:Atom, Symbol) :-
-    atomic_number(atoms:Atom, AtomicNumber),
+symbols:symbol_mf(nuclide(Atom, Neutrons, Ionization), Symbol) :-
+    atomic_number(Atom, AtomicNumber),
+    utils:capitalize(Atom, AtomCapitalized),
+    Mass is AtomicNumber + Neutrons,
+    utils:term_sup(Mass, MassSup),
+    utils:number_sign_sup(Ionization, IonSign),
+    IonAbs is abs(Ionization),
+    (   IonAbs =< 1 -> IonAbsSup = ''
+    ;   IonAbs >  1 -> utils:term_sup(IonAbs, IonAbsSup)
+    ),
+    format(atom(Symbol), '~a~a~a~a', [MassSup, AtomCapitalized, IonAbsSup, IonSign]).
+
+symbols:symbol_mf(atom(Atom), Symbol) :-
+    atomic_number(Atom, AtomicNumber),
     utils:term_sub(AtomicNumber, AtomicNumberSub),
-    format(atom(Symbol), '~a~a~a', [AtomicNumberSub, x, Atom]).
+    utils:capitalize(Atom, AtomCapitalized),
+    format(atom(Symbol), '~a~a', [AtomicNumberSub, AtomCapitalized]).
 
 symbols:symbol_mf(shell(P, L, Count), Symbol) :-
     azimuthal_symbol(L, LS),
@@ -328,8 +410,8 @@ symbols:symbol_mf(shell(P, L, Count), Symbol) :-
 symbols:symbol_mf(orbital(P, L, ML, S), Symbol) :-
     azimuthal_symbol(L, LS),
     utils:term_sup(ML, MLSup),
-    (   utils:safe_is(S, +1 rdiv 2) -> SS = '↑'
-    ;   utils:safe_is(S, -1 rdiv 2) -> SS = '↓'
+    (   utils:safe_is(S, +1 rdiv 2) -> SS = ↑
+    ;   utils:safe_is(S, -1 rdiv 2) -> SS = ↓
     ),
     format(atom(Symbol), '~d~w~w~w', [P, LS, MLSup, SS]).
 
@@ -355,20 +437,20 @@ azimuthal_symbol(Number, Char) :-
 
 :- begin_tests(atoms).
 
-test('normalize(he)', N == atoms:he) :-
-    normalize(he, N).
+test('nuclide(h)', N == nuclide(h, 0, 0)) :-
+    nuclide(h, N).
 
 test('atom_block(he)', B == 1-s) :- atom_block(he, B).
 
-test('electron_spin', ElectronSpin = 1 rdiv 2) :-
+test('electron_spin', ElectronSpin =:= 1 rdiv 2) :-
     once(quantum_numbers:quantum_number(spin, electron, ElectronSpin)).
 
-test('atomic_number(h, 1)') :- atomic_number(atoms:h, 1).
+test('atomic_number(h, 1)') :- atomic_number(atom(h), 1).
 test('atomic_number(carbon, 1)') :- atomic_number(carbon, 6).
 
-test('atom_orbitals(h)') :- atom_orbitals(h, [shell(1, 0, 1)]).
-test('atom_orbitals(he)') :- atom_orbitals(he, [shell(1, 0, 2)]).
-test('atom_orbitals(li)') :- atom_orbitals(li, [he, shell(2, 0, 1)]).
+test('atom_orbitals(h)',  [Shell == [shell(1, 0, 1)]]) :- atom_orbitals(h,  Shell).
+test('atom_orbitals(he)', [Shell == [shell(1, 0, 2)]])  :- atom_orbitals(he, Shell).
+test('atom_orbitals(li)', [Shell == [he, shell(2, 0, 1)]]) :- atom_orbitals(li, Shell).
 
 
 

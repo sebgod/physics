@@ -6,6 +6,9 @@
                   numeric_inverse/2,
                   term_sup/2,
                   term_sub/2,
+                  number_sign_sup/2,
+                  number_sign_sub/2,
+                  capitalize/2,
                   map_term_codes/3,
                   between2d/4,
                   findnsols/4
@@ -67,6 +70,20 @@ numeric_inverse_(A, -B) :-
     ;   A #= -B
     ).
 
+number_sign_sup(Number, Sup) :-
+    Sign is sign(Number),
+    (   Sign =:= 0  -> Sup = ''
+    ;   Sign =:= +1 -> Sup = '⁺'
+    ;   Sign =:= -1 -> Sup = '⁻'
+    ).
+
+number_sign_sub(Number, Sub) :-
+    Sign is sign(Number),
+    (   Sign =:= 0  -> Sub = ''
+    ;   Sign =:= +1 -> Sub = '₊'
+    ;   Sign =:= -1 -> Sub = '₋'
+    ).
+
 term_sup(Term, Symbol) :-
     map_term_codes(term_sup_map, Term, Symbol).
 
@@ -85,12 +102,26 @@ map_term_codes(Map, Term, Symbol) :-
 
 term_sub_map(Code, Sub) :-
     (   between(0'0, 0'9, Code) -> Sub is 0x2080 + Code - 0'0
-    ;   Code = 0'+ -> Sub = 0'₊
-    ;   Code = 0'- -> Sub = 0'₋
-    ;   Code = 0'= -> Sub = 0x208c
+    ;   Code = 0'+  -> Sub = 0'₊
+    ;   Code = 0'-  -> Sub = 0'₋
+    ;   Code = 0'=  -> Sub = 0x208c
     ;   Code = 0x28 -> Sub = 0x208d
     ;   Code = 0x29 -> Sub = 0x208e
     ;   Code = 0xa0 -> Sub = 0xa0
+    ;   Code = 0'a  -> Sub = 0x2090
+    ;   Code = 0'e  -> Sub = 0x2091
+    ;   Code = 0'o  -> Sub = 0x2092
+    ;   Code = 0'x  -> Sub = 0x2093
+    ;   Code = 0'E  -> Sub = 0x2094
+    ;   Code = 0'h  -> Sub = 0x2095
+    ;   Code = 0'k  -> Sub = 0x2096
+    ;   Code = 0'l  -> Sub = 0x2097
+    ;   Code = 0'm  -> Sub = 0x2098
+    ;   Code = 0'n  -> Sub = 0x2099
+    ;   Code = 0'p  -> Sub = 0x209A
+    ;   Code = 0's  -> Sub = 0x209B
+    ;   Code = 0't  -> Sub = 0x209C
+    ;   Code = 0x20 -> Sub = 0x200B
     ).
 term_sup_map(Code, Sup) :-
     (   between(0'4, 0'9, Code) -> Sup is 0x2070 + Code - 0'0
@@ -104,8 +135,15 @@ term_sup_map(Code, Sup) :-
     ;   Code = 0'= -> Sup = 0x207c
     ;   Code = 0x28 -> Sup = 0x207d
     ;   Code = 0x29 -> Sup = 0x207e
-    ;   Code = 0xa0 -> Sup = 0xa0
+    ;   Code = 0x20 -> Sup = 0x200B
     ).
+
+capitalize(Atom, Capitalized) :-
+    sub_atom(Atom, 0, 1, RL, First),
+    sub_atom(Atom, 1, RL, 0, Rest),
+    upcase_atom(First, FirstUp),
+    downcase_atom(Rest, RestDown),
+    atom_concat(FirstUp, RestDown, Capitalized).
 
 between2d(XR, YR, X, Y) :-
     call_semidet_ground(between2d_nd(XR, YR), X, Y).
@@ -149,6 +187,13 @@ maxsols(N, Generator) :-
 :- begin_tests(utils).
 
 test('numeric_inverse(1, -1)') :- numeric_inverse(1, -1).
+test('number_sign_sub(-1)', Sub == '₋') :- number_sign_sub(-1, Sub).
+test('number_sign_sub( 0)', Sub == '' ) :- number_sign_sub( 0, Sub).
+test('number_sign_sub(+1)', Sub == '₊') :- number_sign_sub(+1, Sub).
+test('number_sign_sup(-1)', Sub == '⁻') :- number_sign_sup(-1, Sub).
+test('number_sign_sup( 0)', Sub == '' ) :- number_sign_sup( 0, Sub).
+test('number_sign_sup(+1)', Sub == '⁺') :- number_sign_sup(+1, Sub).
+
 
 test('safe_is(A, -B)', [-A =:= B]) :-
     safe_is(A, -B), B = 4.
@@ -170,5 +215,8 @@ test('safe_is(A, -pi)', [A =:= -pi]) :- safe_is(A, -pi).
 test('safe_is(-A, -pi)', [A =:= pi]) :- safe_is(-A, -pi).
 
 test('term_sup(23)', Sup == '²³') :- term_sup(23, Sup).
+
+test('capitalize(hELlO)', Cap == 'Hello') :- capitalize(hELlO, Cap).
+test('capitalize(h)', Cap == 'H') :- capitalize(h, Cap).
 
 :- end_tests(utils).
