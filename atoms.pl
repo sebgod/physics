@@ -310,7 +310,7 @@ electron_configuration_pairs(Electrons, Configs, Pairs) :-
     setof(P-L, ML^S^member(orbital(P, L, ML, S), Configs), Pairs).
 
 atom_orbitals(Atom0, AggrOrbitals) :-
-    nuclide(Atom0, nuclide(Atom, _N, Ionization)),
+    nuclide(Atom0, nuclide(Atom, _Neutron, Ionization)),
     atomic_number(Atom, AtomicNumber),
     Electrons is AtomicNumber - Ionization,
     electron_configuration_pairs(Electrons, Configs, Pairs),
@@ -335,6 +335,7 @@ principal_azimuthal(Principal, Azimuthal) :-
     Principal >= 1,
     Max is Principal - 1,
     azimuthal_number(Max, Azimuthal).
+
 azimuthal_magnetic(Azimuthal, Magnetic) :-
     utils:safe_is(LV, Azimuthal),
     Min is -LV,
@@ -370,7 +371,7 @@ reduce_noble_shell(Noble, Orbitals, AggrOrbitals) :-
 
 noble_gas_below(E, Noble, Rest) :-
     E > 1,
-    noble(Noble),
+    noble(atom(Noble)),
     atom(Noble, NobleNumber, _, _, _),
     E > NobleNumber,
     utils:safe_is(Rest, E rem NobleNumber).
@@ -451,8 +452,6 @@ test('atomic_number(carbon, 1)') :- atomic_number(carbon, 6).
 test('atom_orbitals(h)',  [Shell == [shell(1, 0, 1)]]) :- atom_orbitals(h,  Shell).
 test('atom_orbitals(he)', [Shell == [shell(1, 0, 2)]])  :- atom_orbitals(he, Shell).
 test('atom_orbitals(li)', [Shell == [he, shell(2, 0, 1)]]) :- atom_orbitals(li, Shell).
-
-
 
 :- end_tests(atoms).
 
