@@ -1,5 +1,6 @@
 ﻿:- module(atoms, [
                   atom/5,
+                  normalize/2,
                   atomic_number/2,
                   isotope/3,
                   noble/1,
@@ -21,7 +22,7 @@
                       between2d/4 as in_block,
                       call_semidet_ground/2 as atoms_call_semidet,
                       call_semidet_ground/3 as block_call_semidet,
-                      call_semidet_ground_first/3 as noble_call_semidet
+                      call_semidet_ground_first/3 as atoms_call_semidet_first
                      ]).
 :- use_module(library(apply), [foldl/4 as reduce_noble_shell_foldl]).
 
@@ -29,18 +30,22 @@
     atoms_call_semidet(1, ?),
     block_call_semidet(2, ?, ?),
     find_electron_configs(+, ?, :, -),
-    noble_call_semidet(2, ?, ?),
+    atoms_call_semidet_first(2, ?, ?),
     reduce_noble_shell_foldl(3, +, +, -).
+
+write_symbol(Obj) :- once(symbol(Obj, Symbol)), write(Symbol).
 
 user:portray(shell(N, L, C)) :-
     N > 0, L >= 0, C > 0,
-    (   once(symbol(shell(N, L, C), SS)) ),
-    write(SS).
+    write_symbol(shell(N, L, C)).
 
 user:portray(orbital(N, L, ML, S)) :-
     N > 0, L >= 0, integer(ML), rational(S),
-    (   once(symbol(orbital(N, L, ML, S), OS)) ),
-    write(OS).
+    write_symbol(orbital(N, L, ML, S)).
+
+user:portray(atoms:Atom) :-
+    atom(Atom),
+    write_symbol(atoms:Atom).
 
 symbols:symbol_mf(sharp, s).
 symbols:symbol_mf(principal, p).
@@ -166,6 +171,12 @@ atom(lv,116, livermorium, 16, 7).
 atom(uus,117,ununseptium, 17, 7).
 atom(uuo,118,ununoctium,  18, 7).
 
+normalize(Atom, Normalized) :-
+    atoms_call_semidet_first(normalize_nd, Atom, Normalized).
+
+normalize_nd(atoms:Atom, atoms:Atom).
+normalize_nd(Name, atoms:Atom) :- atom(Atom, _, Name, _, _).
+normalize_nd(Atom, atoms:Atom) :- atom(Atom, _, _, _, _).
 
 isotope(h, protium, 0).
 isotope(h, deuterium, 1).
@@ -192,7 +203,8 @@ block_nd(P1-d, P, G) :-
     in_block(3-7, 3-13, P, G),
     utils:safe_is(P1, P - 1).
 
-noble(Atom) :- atoms_call_semidet(noble_nd, Atom).
+noble(Atom) :- normalize(Atom, Normalized), noble_(Normalized).
+noble_(atoms:Atom) :- atoms_call_semidet(noble_nd, Atom).
 
 noble_nd(he).
 noble_nd(ne).
@@ -202,16 +214,10 @@ noble_nd(xe).
 noble_nd(rn).
 
 atomic_number(Atom, AtomicNumber) :-
-    atom(Atom),
-    !,
-    atom_length(Atom, Length),
-    (   Length > 2
-    ->  atom(_, AtomicNumber, Atom, _, _)
-    ;   atom(Atom, AtomicNumber, _, _, _)
-    ).
-
-atomic_number(Atom, AtomicNumber) :-
-    var(Atom), atom(Atom, AtomicNumber, _, _, _).
+    atomic_number(Atom, AtomicNumber, _).
+atomic_number(Atom, AtomicNumber, atoms:Symbol) :-
+    normalize(Atom, atoms:Symbol),
+    atom(Symbol, AtomicNumber, _, _, _).
 
 electron_configuration_pairs(Electrons, Configs, Pairs) :-
     electron_configuration(Electrons, Configs),
@@ -276,7 +282,7 @@ reduce_noble_shell(Noble, Orbitals, AggrOrbitals) :-
     ).
 
 noble_shell(Noble, Shell) :-
-    noble_call_semidet(noble_shell_nd, Noble, Shell).
+    atoms_call_semidet_first(noble_shell_nd, Noble, Shell).
 
 :- dynamic noble_shell_dyn/2.
 noble_shell_nd(Noble, NobleShell) :-
@@ -302,6 +308,11 @@ quantum_numbers:quantum_number_mf(azimuthal, n=Principal, Azimuthal) :-
 
 quantum_numbers:quantum_number_mf(magnetic, l=L, Ml) :-
     azimuthal_magnetic(L, Ml).
+
+symbols:symbol_mf(atoms:Atom, Symbol) :-
+    atomic_number(atoms:Atom, AtomicNumber),
+    utils:term_sub(AtomicNumber, AtomicNumberSub),
+    format(atom(Symbol), '~w~w', [AtomicNumberSub, Atom]).
 
 symbols:symbol_mf(shell(P, L, Count), Symbol) :-
     azimuthal_symbol(L, LS),
@@ -338,12 +349,15 @@ azimuthal_symbol(Number, Char) :-
 
 :- begin_tests(atoms).
 
+test('normalize(he)', N == atoms:he) :-
+    normalize(he, N).
+
 test('atom_block(he)', B == 1-s) :- atom_block(he, B).
 
 test('electron_spin', ElectronSpin = 1 rdiv 2) :-
     once(quantum_numbers:quantum_number(spin, electron, ElectronSpin)).
 
-test('atomic_number(h, 1)') :- atomic_number(h, 1).
+test('atomic_number(h, 1)') :- atomic_number(atoms:h, 1).
 test('atomic_number(carbon, 1)') :- atomic_number(carbon, 6).
 
 :- end_tests(atoms).

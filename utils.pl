@@ -19,7 +19,7 @@
     maxsols(?, 0),
     map_term_codes(2, +, ?).
 
-:- use_module(library(clpfd), [op(700, xfx, (#=))]).
+:- use_module(library(clpfd)).
 
 %%	call_semidet_ground(:Goal, +Var) is semidet.
 %%	call_semidet_ground(:Goal, ?Var) is nondet.

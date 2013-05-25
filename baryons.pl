@@ -8,6 +8,7 @@
 :- use_module(color_charge, [
                              white/3,
                              color/3,
+
                              primary_color/3,
                              anti_color/3
                             ]).
@@ -16,7 +17,7 @@
                                 quantum_number/3
                                ]).
 
-:- meta_predicate classical_baryon_semidet(1, ?).
+:- meta_predicate baryons_call_semidet(1,?).
 
 %%	baryon(+Particle) is semidet.
 %%  baryon(?Particle) is nondet.
