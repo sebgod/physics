@@ -233,6 +233,11 @@ isotope(xe, 78, 0.269086).
 isotope(xe, 75, 0.264006).
 isotope(xe, 80, 0.104357).
 
+isotope(radon, 222, trace).
+
+% http://en.wikipedia.org/w/index.php?title=Isotope_lists,_0-24&action=edit
+%
+
 most_abundant_isotope(Atom, nuclide(Atom, N, 0), MoleFrac) :-
     isotope(Atom, N, MoleFrac),
     number(MoleFrac),
