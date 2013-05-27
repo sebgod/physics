@@ -17,6 +17,8 @@
                   electron_configuration_pairs/3
                  ]).
 
+:- use_module(library(sgml)).
+:- use_module(library(sgml_write)).
 :- use_module(particle_taxonomy).
 :- use_module(symbols, [symbol/2, write_symbol/1]).
 :- use_module(quantum_numbers, []).
@@ -493,6 +495,12 @@ test('atom_orbitals(li)', [Shell == [he, shell(2, 0, 1)]]) :- atom_orbitals(li, 
 test('atom_orbitals(ds)',
      [Shell == [rn, shell(5, 4, 14), shell(6, 2, 8), shell(7, 0, 2)]]) :-
     atom_orbitals(ds, Shell).
+
+test('write_xml') :-
+    load_xml_file('data/www.webelements.com/holmium/isotopes.html', Xml),
+    open('data/holmium_isotopes.xml', write, Stream, []),
+    xml_write(Stream, Xml, []),
+    close(Stream).
 
 :- end_tests(atoms).
 

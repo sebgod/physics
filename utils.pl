@@ -2,6 +2,7 @@
                   call_semidet_ground/2,
                   call_semidet_ground/3,
                   call_semidet_ground_first/3,
+                  call_semidet_ground_first/4,
                   safe_is/2,
                   numeric_inverse/2,
                   term_sup/2,
@@ -17,6 +18,7 @@
     call_semidet_ground(1, ?),
     call_semidet_ground(2, ?, ?),
     call_semidet_ground_first(2, ?,?),
+    call_semidet_ground_first(3,?,?,?),
     findnsols(+, ?, :, -),
     findnsols(+, ?, :, -, ?),
     maxsols(?, 0),
@@ -47,6 +49,15 @@ call_semidet_ground_first(Goal, V1, V2) :-
     ->  call(Goal, V1, V2), !
     ;   call(Goal, V1, V2)
     ).
+
+%%	call_semidet_ground_first(:Goal, +V1, ?V2, ?V3) is semidet.
+%%	call_semidet_ground_first(:Goal, ?V1, ?V2, ?V3) is nondet.
+call_semidet_ground_first(Goal, V1, V2, V3) :-
+    (   ground(V1)
+    ->  call(Goal, V1, V2, V3), !
+    ;   call(Goal, V1, V2, V3)
+    ).
+
 
 %%	safe_is(+A, +B) is semidet.
 %%	safe_is(-A, +B) is det.
