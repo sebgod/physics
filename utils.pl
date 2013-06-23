@@ -115,35 +115,45 @@ term_sub_map(Code, Sub) :-
     (   between(0'0, 0'9, Code) -> Sub is 0x2080 + Code - 0'0
     ;   Code = 0'+  -> Sub = 0'₊
     ;   Code = 0'-  -> Sub = 0'₋
-    ;   Code = 0'=  -> Sub = 0x208c
-    ;   Code = 0x28 -> Sub = 0x208d
-    ;   Code = 0x29 -> Sub = 0x208e
-    ;   Code = 0xa0 -> Sub = 0xa0
+    ;   Code = 0'=  -> Sub = 0x208C
+    ;   Code = 0x20 -> Sub = 0x200B
+    ;   Code = 0x28 -> Sub = 0x208D
+    ;   Code = 0x29 -> Sub = 0x208E
+    ;   Code = 0xA0 -> Sub = 0xA0
     ;   Code = 0'a  -> Sub = 0x2090
+    ;   Code = 0'b  -> Sub = 0x1D66
     ;   Code = 0'e  -> Sub = 0x2091
-    ;   Code = 0'o  -> Sub = 0x2092
-    ;   Code = 0'x  -> Sub = 0x2093
-    ;   Code = 0'E  -> Sub = 0x2094
+    ;   Code = 0'g  -> Sub = 0x1D67
     ;   Code = 0'h  -> Sub = 0x2095
+    ;   Code = 0'i  -> Sub = 0x1D62
     ;   Code = 0'k  -> Sub = 0x2096
     ;   Code = 0'l  -> Sub = 0x2097
     ;   Code = 0'm  -> Sub = 0x2098
     ;   Code = 0'n  -> Sub = 0x2099
+    ;   Code = 0'o  -> Sub = 0x2092
     ;   Code = 0'p  -> Sub = 0x209A
+    ;   Code = 0'P  -> Sub = 0x1D69
+    ;   Code = 0'r  -> Sub = 0x1D63
+    ;   Code = 0'R  -> Sub = 0x1D68
     ;   Code = 0's  -> Sub = 0x209B
+    ;   Code = 0'S  -> Sub = 0x2094
     ;   Code = 0't  -> Sub = 0x209C
-    ;   Code = 0x20 -> Sub = 0x200B
+    ;   Code = 0'u  -> Sub = 0x1D64
+    ;   Code = 0'v  -> Sub = 0x1D65
+    ;   Code = 0'x  -> Sub = 0x2093
+    ;   Code = 0'X  -> Sub = 0x1D6A
     ).
 term_sup_map(Code, Sup) :-
     (   between(0'4, 0'9, Code) -> Sup is 0x2070 + Code - 0'0
-    ;   Code = 0'0 -> Sup = 0x2070
-    ;   Code = 0'1 -> Sup = 0'¹
-    ;   Code = 0'2 -> Sup = 0'²
-    ;   Code = 0'3 -> Sup = 0'³
-    ;   Code = 0'+ -> Sup = 0'⁺
-    ;   Code = 0'- -> Sup = 0'⁻
-    ;   Code = 0'n -> Sup = 0'ⁿ
-    ;   Code = 0'= -> Sup = 0x207c
+    ;   Code = 0'0  -> Sup = 0x2070
+    ;   Code = 0'1  -> Sup = 0'¹
+    ;   Code = 0'2  -> Sup = 0'²
+    ;   Code = 0'3  -> Sup = 0'³
+    ;   Code = 0'+  -> Sup = 0'⁺
+    ;   Code = 0'-  -> Sup = 0'⁻
+    ;   Code = 0'i  -> Sup = 0x2071
+    ;   Code = 0'n  -> Sup = 0'ⁿ
+    ;   Code = 0'=  -> Sup = 0x207c
     ;   Code = 0x28 -> Sup = 0x207d
     ;   Code = 0x29 -> Sup = 0x207e
     ;   Code = 0x20 -> Sup = 0x200B
